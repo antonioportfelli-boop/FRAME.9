@@ -1,0 +1,40 @@
+import { type ModuleId } from "@/lib/signal/types";
+import { BlockPane } from "@/components/modules/BlockPane";
+import { PlatesPane } from "@/components/modules/PlatesPane";
+import { KitPane } from "@/components/modules/KitPane";
+import { AuditPane } from "@/components/modules/AuditPane";
+import { WirePane } from "@/components/modules/WirePane";
+import { MarketPane } from "@/components/modules/MarketPane";
+import { PostPane } from "@/components/modules/PostPane";
+import { LookupPane } from "@/components/modules/LookupPane";
+import { SourcePane } from "@/components/modules/SourcePane";
+import { FramesPane } from "./FramesPane";
+import { DecodePane } from "./DecodePane";
+import { HexPane } from "./HexPane";
+import { HostPane } from "./HostPane";
+import { WifiPane } from "./WifiPane";
+import { BluetoothPane } from "./BluetoothPane";
+import { RadioPane } from "./RadioPane";
+import { TelevisionPane } from "./TelevisionPane";
+import { NodePane } from "./NodePane";
+
+export function ModuleBody({ id, active }: { id: ModuleId; active: boolean }) {
+  if (id === "frames") return <FramesPane />;
+  if (id === "decode") return <DecodePane />;
+  if (id === "hex") return <HexPane />;
+  if (id === "host") return <HostPane />;
+  if (id === "wifi") return <WifiPane />;
+  if (id === "bluetooth") return <BluetoothPane />;
+  if (id === "radio") return <RadioPane active={active} />;
+  if (id === "television") return <TelevisionPane active={active} />;
+  if (id === "block") return <BlockPane />;
+  if (id === "plates") return <PlatesPane />;
+  if (id === "kit") return <KitPane />;
+  if (id === "audit") return <AuditPane />;
+  if (id === "wire") return <WirePane />;
+  if (id === "market") return <MarketPane />;
+  if (id === "post") return <PostPane />;
+  if (id === "lookup") return <LookupPane />;
+  if (id === "source") return <SourcePane />;
+  return <NodePane />;
+}

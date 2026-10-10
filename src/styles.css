@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #080b0e;
+  --color-ink: #0c1116;
+  --color-surface: #12191e;
+  --color-raised: #1a2329;
+  --color-fg: #e7e2d4;
+  --color-muted: #8b9691;
+  --color-line: #2a363c;
+  --color-teal: #3d9a8c;
+  --color-teal-2: #1d4a44;
+  --color-brass: #b89a6a;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --radius-sm: 2px;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: var(--color-teal-2);
+    color: var(--color-fg);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line) transparent;
+  }
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-dock {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+html[data-phone="1"] {
+  font-size: 22px;
+}
+
+html[data-phone="1"] .safe-dock button {
+  min-width: 4.6rem;
+  min-height: 4.4rem;
+}
+
+.field-hint {
+  top: calc(env(safe-area-inset-top) + 13.5rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
