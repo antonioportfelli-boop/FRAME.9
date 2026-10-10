@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ["Forge.-9"]
+  push:
+    branches: ["Forge.-9"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: gates (Node 22)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # `npm run build` chains `npm run db:migrate`. An empty DATABASE_URL makes
+      # scripts/migrate.mjs skip, so CI can never migrate a real database.
+      DATABASE_URL: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: INSTALL
+        run: npm ci --no-audit --no-fund
+      - name: TYPECHECK
+        run: npm run typecheck
+      - name: LINT
+        run: npm run lint -- --max-warnings=0
+      - name: TEST
+        run: npm test
+      - name: BUILD
+        run: npm run build 2>&1 | tee build.log
+      - name: BUILD did not migrate a database
+        run: grep -F "[migrate] DATABASE_URL not set" build.log
+
+  secret-scan:
+    name: secret-scan (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: 8.28.0
+      GITLEAKS_SHA256: a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks (checksum-pinned)
+        run: |
+          curl -sSfL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum -c -
+          tar -xzf gitleaks.tgz gitleaks
+      - name: SECRET SCAN (commits in this PR / push)
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          # Scans the commits this change introduces. Pre-existing history
+          # findings are tracked as baseline security debt, not hidden here.
+          if [ -n "$PR_BASE" ]; then
+            range="$PR_BASE..$PR_HEAD"
+          elif [ -n "$PUSH_BEFORE" ] && [ "$PUSH_BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            range="$PUSH_BEFORE..$GITHUB_SHA"
+          else
+            range="-1 $GITHUB_SHA"
+          fi
+          echo "scanning: $range"
+          ./gitleaks git --redact --no-banner --exit-code 1 --log-opts="$range" .
