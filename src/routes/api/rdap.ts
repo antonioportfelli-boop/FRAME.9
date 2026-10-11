@@ -1,3 +1,4 @@
+import { fetchRdap } from "@/lib/rdap-fetch";
 import { createFileRoute } from "@tanstack/react-router";
 
 const GAP_MS = 2000;
@@ -60,7 +61,7 @@ export const Route = createFileRoute("/api/rdap")({
             ? `https://rdap.org/autnum/${query.replace(/^asn:/i, "")}`
             : `https://rdap.org/${kind}/${encodeURIComponent(query)}`;
         try {
-          const response = await fetch(path, { signal: AbortSignal.timeout(8000) });
+          const response = await fetchRdap(path);
           if (!response.ok) {
             return Response.json(
               {
