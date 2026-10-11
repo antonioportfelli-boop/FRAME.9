@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { kindOf, trimRecord } from "@/lib/rdap";
+import { asnNumber, kindOf, trimRecord } from "@/lib/rdap";
 
 const GAP_MS = 2000;
 let lastLookup = 0;
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/rdap")({
         lastLookup = now;
         const path =
           kind === "autnum"
-            ? `https://rdap.org/autnum/${query.replace(/^asn:/i, "")}`
+            ? `https://rdap.org/autnum/${asnNumber(query)}`
             : `https://rdap.org/${kind}/${encodeURIComponent(query)}`;
         try {
           const response = await fetch(path, { signal: AbortSignal.timeout(8000) });
