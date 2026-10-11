@@ -3,7 +3,7 @@ Audit date: 2026-10-11. Scope: accessible GitHub API repository metadata, PRs, f
 
 VERIFIED: two distinct FRAME.9 repos and their default branches; personal Forge.-9 ahead of main; org main security PR #6 reverted by #7; GitHub CI runs marked success (not universal functionality); source plan `docs/FRAME9-HARDWARE-AWARENESS-100.md` exists on Forge.-9; host-probe implementation exists.
 PARTIAL: local JSON Memory V0 prototype, sample tests, gate review; not integrated into frontend, Supabase or Cloud.
-BLOCKED: no physical device to attest, org GOLIATH-OS2 returns 404, no cloud tenant/cost/retention configuration verified.
+BLOCKED: no physical device to attest, an incorrect GOLIATH-OS2 owner alias returns 404; correct `3XTRINITY-CORPORATIONS/GOLIATH-OS2` is README-only (no executable app verified), no cloud tenant/cost/retention configuration verified.
 NOT_RUN: full repo npm ci/typecheck/lint/build; full SQL RLS policy tests; live API pairing; real agent ingestion; real data deletion beyond local adapter; publication.
 FAILED: no tests failed in isolated local prototype; past Forge.-9 CI runs 38124562228 / 38124517960 returned failure (root cause NOT_VERIFIED).
 
