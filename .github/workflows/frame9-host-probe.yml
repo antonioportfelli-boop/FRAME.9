@@ -1,0 +1,26 @@
+name: FRAME.9 Host Probe
+on:
+  pull_request:
+    paths:
+      - 'tools/host-probe/**'
+      - 'docs/FRAME9-HARDWARE-AWARENESS-100.md'
+      - '.github/workflows/frame9-host-probe.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Offline unit and loopback integration tests
+        run: python3 -m unittest discover -s tools/host-probe -p 'test_*.py' -v
+      - name: Real Linux snapshot schema smoke test
+        run: |
+          python3 tools/host-probe/frame9_host_probe.py snapshot > /tmp/frame9-snapshot.json
+          python3 -c 'import json; v=json.load(open("/tmp/frame9-snapshot.json")); assert v["schema_version"] == 1 and v["kernel"]["name"] == "Linux" and "hostname" not in v'
+          rm -f /tmp/frame9-snapshot.json
