@@ -24,6 +24,10 @@ npm run build
 
 The test command is compatible with Windows and Unix shells. Generic platform tests use isolated fixtures rather than the app's real branding or authentication configuration. Four documentation-contract tests explicitly skip when the excluded Grok internal skill documents are absent.
 
+## Branches and CI
+
+`main` is the stable base; development happens on `Forge.-9`. Open pull requests against `Forge.-9`. GitHub Actions (`.github/workflows/ci.yml`, Node 22 per `.nvmrc`) runs install, typecheck, lint (no warnings), test, build and a gitleaks secret scan for pull requests and pushes to `Forge.-9`.
+
 ## Structure
 
 - `src/components/desk`: desktop shell and windows.
