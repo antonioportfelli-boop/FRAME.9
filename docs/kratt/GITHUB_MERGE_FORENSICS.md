@@ -25,7 +25,7 @@ Status: PARTIAL (API inspection; no local clones of remote repositories).
 
 ## GOLIATH cross-integration
 - `tkynnap-creator/GOLIATH-OS`: default main; read-only connector permission; only README and .env.example found on main, no executable app confirmed.
-- `3XTRINITY-CORPORATION-AND-SOFTWARE/GOLIATH-OS2`: GitHub repository metadata 404 under current credential: BLOCKED; may be wrong name or inaccessible.
+- `3XTRINITY-CORPORATION-AND-SOFTWARE/GOLIATH-OS2`: incorrect owner string, GitHub 404. Correct repository is `3XTRINITY-CORPORATIONS/GOLIATH-OS2`: main has single initial commit `9753de9715252734d36d240d445a11b0eeef2066` (2026-07-06), README.md only; read-only connector, executable app NOT_VERIFIED.
 - No authenticated FRAME.9 ↔ GOLIATH ↔ KRATT live API or permissioned device pair shown by this audit.
 
 ## P0 decisions
