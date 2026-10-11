@@ -4,7 +4,7 @@ Signal desk built with React 19, TanStack Start, Vite and Tailwind CSS.
 
 ## Run locally
 
-Use Node.js 22.12+ (verified with Node 24) and npm:
+Use Node.js 22 (pinned in `.nvmrc`; CI runs the latest 22.x) and npm. The minimum is 22.13, because a lint dependency (`eslint-visitor-keys` 5) declares `^22.13.0`. Node 24 also passes every check:
 
 ```sh
 npm ci
