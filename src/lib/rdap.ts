@@ -1,10 +1,7 @@
 /**
- * Pure helpers for the public RDAP lookup (`src/routes/api/rdap.ts`), split out
- * so they can be unit-tested (scripts/rdap.test.mjs). Behaviour unchanged.
+ * Pure helpers for the public RDAP lookup (src/routes/api/rdap.ts).
+ * Parsed inputs are not trusted: avoid registry calls for malformed IP/ASN values.
  */
-export function kindOf(query: string): "ip" | "domain" | "autnum" | null {
-  if (/^(?:asn:)?\d{1,10}$/i.test(query)) return "autnum";
-  if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(query) || /^[0-9a-f:]+$/i.test(query)) return "ip";
 const ASN_PATTERN = /^(?:asn:?|as)?(\d{1,10})$/i;
 const MAX_ASN = 4294967295;
 
@@ -20,11 +17,11 @@ function isIPv4(query: string): boolean {
   return parts.length === 4 && parts.every((p) => /^\d{1,3}$/.test(p) && Number(p) <= 255);
 }
 
-/** IPv6 needs a colon; the WHATWG URL parser then validates the full grammar. */
+/** IPv6 needs a colon; WHATWG URL parser validates the complete grammar. */
 function isIPv6(query: string): boolean {
   if (!query.includes(":") || !/^[0-9a-f:.]+$/i.test(query)) return false;
   try {
-    new URL(`http://[${query}]/`);
+    new URL("http://[" + query + "]/");
     return true;
   } catch {
     return false;
@@ -48,14 +45,14 @@ export function trimRecord(body: unknown): Record<string, string | null> {
   const vcard = Array.isArray(row.entities) ? row.entities[0] : null;
   const card = vcard && typeof vcard === "object" ? (vcard as Record<string, unknown>).vcardArray : null;
   let name: string | null = null;
-  if (Array.isArray(card)) {
-    for (const item of card) {
-  // RFC 7095 jCard: ["vcard", [[name, params, type, value], ...]]. The flat
-  // property list is still accepted for older/non-conforming responses.
+  // RFC 7095 jCard: ["vcard", [[name, params, type, value], ...]].
+  // Accept legacy flat property lists as well.
   const props = Array.isArray(card) && card[0] === "vcard" ? card[1] : card;
   if (Array.isArray(props)) {
     for (const item of props) {
-      if (Array.isArray(item) && item[0] === "fn" && typeof item[3] === "string") name = item[3].slice(0, 180);
+      if (Array.isArray(item) && item[0] === "fn" && typeof item[3] === "string") {
+        name = item[3].slice(0, 180);
+      }
     }
   }
   return {
