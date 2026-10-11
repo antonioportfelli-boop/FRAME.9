@@ -74,3 +74,22 @@ jobs:
           fi
           echo "scanning: $range"
           ./gitleaks git --redact --no-banner --exit-code 1 --log-opts="$range" .
+
+  auth-route:
+    name: auth-route (built /api/auth)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: INSTALL
+        run: npm ci --no-audit --no-fund
+      - name: BUILD
+        run: npm run build
+      - name: AUTH (route present, flag off -> 404, unauthenticated denied)
+        run: npm run test:auth-route
