@@ -1,7 +1,11 @@
 import { useState } from "react";
-
-const REPO = "https://github.com/antonioportfelli-boop/FRAME.9";
-const CLONE = `git clone ${REPO}.git`;
+import {
+  CLONE_COMMAND as CLONE,
+  FORK_URL,
+  SOURCE_BRANCH,
+  SOURCE_REPO as REPO,
+  archiveUrl,
+} from "@/lib/source";
 
 export function SourcePane() {
   const [status, setStatus] = useState<string | null>(null);
@@ -22,8 +26,8 @@ export function SourcePane() {
       <p className="mt-2 break-all font-mono text-xs text-muted">{REPO}</p>
       <div className="mt-4 flex flex-wrap gap-2">
         <a className="inline-flex min-h-11 items-center border border-teal px-3 text-xs text-teal" href={REPO} target="_blank" rel="noopener noreferrer">Open on GitHub</a>
-        <a className="inline-flex min-h-11 items-center border border-line px-3 text-xs text-fg" href={`${REPO}/archive/refs/heads/main.zip`}>Download ZIP</a>
-        <a className="inline-flex min-h-11 items-center border border-line px-3 text-xs text-fg" href={`${REPO}/fork`} target="_blank" rel="noopener noreferrer">Fork</a>
+        <a className="inline-flex min-h-11 items-center border border-line px-3 text-xs text-fg" href={archiveUrl()}>Download ZIP ({SOURCE_BRANCH})</a>
+        <a className="inline-flex min-h-11 items-center border border-line px-3 text-xs text-fg" href={FORK_URL} target="_blank" rel="noopener noreferrer">Fork</a>
         <button type="button" className="min-h-11 border border-line px-3 text-xs text-fg" onClick={() => void copyClone()}>Copy clone</button>
       </div>
       <label htmlFor="source-clone" className="mt-5 text-xs text-muted">Kloonimiskäsk</label>
@@ -32,3 +36,4 @@ export function SourcePane() {
     </div>
   );
 }
+
