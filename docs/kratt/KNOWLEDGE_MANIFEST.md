@@ -1,7 +1,18 @@
-# KNOWLEDGE_MANIFEST v1
-30 architect-specified bibliographic candidates. **0/30 publisher/catalog records individually verified in this cycle; 0 full texts imported.** Do not claim books have been read, parsed or used for model training.
-Cards are stored in books.v1.json. No licensed or copyrighted text is redistributed.
-Before upgrading a card to VERIFIED, check author/title/edition/year in a publisher, national library or established catalog; link the URL and license; extract a separate, independently worded 100–200 word summary and testable claim where applicable.
-Discipline type controls: psychology claims must distinguish replication and empirical measurement; metaphysics must remain philosophical arguments, not experiments; computer science must include reproducible definitions/algorithms, not unlicensed formula scans.
-Rights: public domain must be assessed per edition, region and translation, not title alone.
-Architecture: Book Catalog → Learning Card → Evidence/Limitations → Evaluation Bank; none of these grants runtime privileges.
+# KRATT KNOWLEDGE MANIFEST v1 — 2026-10-11
+
+Status PARTIAL. This is a bibliography candidate registry, NOT a completed learning program.
+
+- 30/30 architect-specified titles are recorded in three files:
+  - books_psychology.md (P01–P10)
+  - books_metaphysics.md (M01–M10)
+  - books_computer_science.md (C01–C10)
+- 0/30 individual publisher/library catalog records independently verified: NOT_RUN.
+- 0/30 licenses checked per edition, translation and jurisdiction: NOT_RUN.
+- 0/30 full texts imported; 0/30 independently verified learning cards.
+- No book content was used to train model weights.
+
+Required next step for each learning card: book_id, author, exact title and edition, publication_year, bibliographic source, license_status, discipline, independently written core_concepts, testable_claims, limitations, engineering_applications, related_skills, claim_type and confidence. Source URLs must be independently verified before promotion.
+
+Claim types: EMPIRICAL_EVIDENCE, THEORETICAL_MODEL, PHILOSOPHICAL_ARGUMENT, SPECULATIVE_CLAIM. Metaphysical arguments must not be presented as empirical proof. Do not import copyrighted book scans without authorization.
+
+Canonical storage format for subsequent phase is pending; books.v1.json does not currently exist in this branch.
