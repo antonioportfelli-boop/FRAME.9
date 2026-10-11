@@ -1,6 +1,5 @@
 import { fetchRdap } from "@/lib/rdap-fetch";
 import { createFileRoute } from "@tanstack/react-router";
-import { kindOf, trimRecord } from "@/lib/rdap";
 import { asnNumber, kindOf, trimRecord } from "@/lib/rdap";
 
 const GAP_MS = 2000;
