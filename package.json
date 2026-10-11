@@ -13,6 +13,7 @@
     "build:dev": "node scripts/with-app-env.mjs node node_modules/vite/bin/vite.js build --mode development",
     "preview": "node scripts/with-app-env.mjs node node_modules/vite/bin/vite.js preview",
     "preview:restart": "node scripts/preview.mjs restart",
+    "check": "npm run typecheck && npm run lint -- --max-warnings=0 && npm test && npm run build",
     "preview:stop": "node scripts/preview.mjs stop",
     "typecheck": "tsc --noEmit",
     "check:auth": "node scripts/check-auth-invariant.mjs",

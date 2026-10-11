@@ -4,7 +4,7 @@ Signal desk built with React 19, TanStack Start, Vite and Tailwind CSS.
 
 ## Run locally
 
-Use Node.js 22.12+ (verified with Node 24) and npm:
+Use Node.js 22 (pinned in `.nvmrc`; CI runs the latest 22.x) and npm. The minimum is 22.13, because a lint dependency (`eslint-visitor-keys` 5) declares `^22.13.0`. Node 24 also passes every check:
 
 ```sh
 npm ci
@@ -23,6 +23,10 @@ npm run build
 ```
 
 The test command is compatible with Windows and Unix shells. Generic platform tests use isolated fixtures rather than the app's real branding or authentication configuration. Four documentation-contract tests explicitly skip when the excluded Grok internal skill documents are absent.
+
+## Branches and CI
+
+`main` is the stable base; development happens on `Forge.-9`. Open pull requests against `Forge.-9`. GitHub Actions (`.github/workflows/ci.yml`, Node 22 per `.nvmrc`) runs install, typecheck, lint (no warnings), test, build and a gitleaks secret scan for pull requests and pushes to `Forge.-9`.
 
 ## Structure
 
