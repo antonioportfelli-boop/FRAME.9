@@ -2,6 +2,9 @@
  * Pure helpers for the public RDAP lookup (`src/routes/api/rdap.ts`), split out
  * so they can be unit-tested (scripts/rdap.test.mjs). Behaviour unchanged.
  */
+export function kindOf(query: string): "ip" | "domain" | "autnum" | null {
+  if (/^(?:asn:)?\d{1,10}$/i.test(query)) return "autnum";
+  if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(query) || /^[0-9a-f:]+$/i.test(query)) return "ip";
 const ASN_PATTERN = /^(?:asn:?|as)?(\d{1,10})$/i;
 const MAX_ASN = 4294967295;
 
@@ -45,6 +48,8 @@ export function trimRecord(body: unknown): Record<string, string | null> {
   const vcard = Array.isArray(row.entities) ? row.entities[0] : null;
   const card = vcard && typeof vcard === "object" ? (vcard as Record<string, unknown>).vcardArray : null;
   let name: string | null = null;
+  if (Array.isArray(card)) {
+    for (const item of card) {
   // RFC 7095 jCard: ["vcard", [[name, params, type, value], ...]]. The flat
   // property list is still accepted for older/non-conforming responses.
   const props = Array.isArray(card) && card[0] === "vcard" ? card[1] : card;
