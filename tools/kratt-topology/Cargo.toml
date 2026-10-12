@@ -1,0 +1,13 @@
+[package]
+name = "kratt_antikythera_topology"
+version = "0.1.0"
+edition = "2021"
+description = "Deterministic 250-node telemetry topology; explicitly NOT cryptography"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[lib]
+name = "kratt_antikythera_topology"
+path = "src/lib.rs"
+
+[dependencies]
