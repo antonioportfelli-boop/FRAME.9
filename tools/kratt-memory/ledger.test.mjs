@@ -47,7 +47,7 @@ test('calendar, evidence, consent and explicit hash checks fail closed', () => {
   assert.throws(() => normalizeEvent({ ...base(), timestamp_utc: '2025-02-29T10:00:00Z' }), /real UTC calendar/);
   assert.doesNotThrow(() => normalizeEvent({ ...base(), timestamp_utc: '2024-02-29T10:00:00Z' }));
   assert.throws(() => normalizeEvent({ ...base(), evidence_refs: ['   '] }), /invalid evidence_refs/);
-  assert.throws(() => normalizeEvent({ ...base(), evidence_refs: ['ok\\nnot-ok'] }), /invalid evidence_refs/);
+  assert.throws(() => normalizeEvent({ ...base(), evidence_refs: ['ok' + String.fromCharCode(10) + 'not-ok'] }), /invalid evidence_refs/);
   assert.throws(() => normalizeEvent({ ...base(), consent_reference: 'arbitrary-marker' }), /invalid consent reference/);
   assert.doesNotThrow(() => normalizeEvent({
     ...base(), visibility_scope: 'private', consent_reference: 'consent:fixture-001'
