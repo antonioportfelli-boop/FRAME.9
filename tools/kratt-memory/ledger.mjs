@@ -48,7 +48,7 @@ export function normalizeEvent(event) {
   if (!SCOPES.has(result.visibility_scope)) fail('unknown visibility_scope');
   if (!STATUSES.has(result.status)) fail('unknown status');
   if (!Array.isArray(result.evidence_refs) || result.evidence_refs.length > 30 ||
-      result.evidence_refs.some(e => typeof e !== 'string' || !e.trim() || e.length > 1000 || /[\u0000-\u001f\u007f]/.test(e))) {
+      result.evidence_refs.some(e => typeof e !== 'string' || !e.trim() || e.length > 1000 || [...e].some(c => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127))) {
     fail('invalid evidence_refs');
   }
   if (result.status === 'VERIFIED' && result.evidence_refs.length === 0) fail('VERIFIED requires evidence_refs');
