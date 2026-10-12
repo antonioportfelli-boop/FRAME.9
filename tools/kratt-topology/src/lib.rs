@@ -61,7 +61,7 @@ impl TalmudDialectic {
 impl Default for TalmudDialectic {
     fn default() -> Self {
         Self {
-            hillel_leniency: 1.618_033_988_749_895,
+            hillel_leniency: (1.0 + 5.0_f64.sqrt()) / 2.0,
             shammai_rigor: std::f64::consts::PI,
         }
     }
