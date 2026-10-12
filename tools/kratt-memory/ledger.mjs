@@ -36,19 +36,34 @@ export function normalizeEvent(event) {
   }
   if (result.schema_version !== SCHEMA_VERSION) fail('unsupported schema_version');
   if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(result.event_id)) fail('invalid event_id');
-  if (!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?Z$/.test(result.timestamp_utc) || !Number.isFinite(Date.parse(result.timestamp_utc))) fail('timestamp_utc must be UTC ISO-8601');
+  const ts = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?Z$/.exec(result.timestamp_utc);
+  const millis = Date.parse(result.timestamp_utc);
+  const date = new Date(millis);
+  if (!ts || !Number.isFinite(millis) ||
+      date.getUTCFullYear() !== Number(ts[1]) || date.getUTCMonth() + 1 !== Number(ts[2]) ||
+      date.getUTCDate() !== Number(ts[3]) || date.getUTCHours() !== Number(ts[4]) ||
+      date.getUTCMinutes() !== Number(ts[5]) || date.getUTCSeconds() !== Number(ts[6])) {
+    fail('timestamp_utc must be a real UTC calendar instant');
+  }
   if (!SCOPES.has(result.visibility_scope)) fail('unknown visibility_scope');
   if (!STATUSES.has(result.status)) fail('unknown status');
-  if (!Array.isArray(result.evidence_refs) || result.evidence_refs.length > 30 || result.evidence_refs.some(e => typeof e !== 'string' || e.length > 1000)) fail('invalid evidence_refs');
+  if (!Array.isArray(result.evidence_refs) || result.evidence_refs.length > 30 ||
+      result.evidence_refs.some(e => typeof e !== 'string' || !e.trim() || e.length > 1000 || /[\u0000-\u001f\u007f]/.test(e))) {
+    fail('invalid evidence_refs');
+  }
   if (result.status === 'VERIFIED' && result.evidence_refs.length === 0) fail('VERIFIED requires evidence_refs');
   if (result.visibility_scope !== 'public' && result.consent_reference === 'NOT_REQUIRED_PUBLIC') fail('non-public event needs consent');
+  if (result.consent_reference !== 'NOT_REQUIRED_PUBLIC' &&
+      !/^consent:[A-Za-z0-9][A-Za-z0-9._:-]{3,127}$/.test(result.consent_reference)) {
+    fail('invalid consent reference marker');
+  }
   if (result.commit_sha !== 'NOT_APPLICABLE' && !/^[a-f0-9]{40}$/.test(result.commit_sha)) fail('commit_sha must be full Git SHA');
   const payload = { ...result }; delete payload.content_hash;
   const serialized = JSON.stringify(stable(payload));
   if (Buffer.byteLength(serialized, 'utf8') > MAX_EVENT_BYTES) fail('event exceeds 16 KiB');
   if (SECRET.test(serialized)) fail('potential credential present; reject before storage');
   const digest = hash(payload);
-  if (result.content_hash && result.content_hash !== digest) fail('content_hash mismatch');
+  if (Object.hasOwn(result, 'content_hash') && result.content_hash !== digest) fail('content_hash mismatch');
   return { ...payload, content_hash: digest };
 }
 
@@ -59,6 +74,15 @@ export class JsonMemoryBank {
     try {
       const db = JSON.parse(await readFile(this.path, 'utf8'));
       if (db.schema_version !== SCHEMA_VERSION || !Array.isArray(db.events)) fail('unsupported bank schema');
+      const ids = new Set();
+      for (const event of db.events) {
+        const checked = normalizeEvent(event);
+        if (!Object.hasOwn(event, 'content_hash') || checked.content_hash !== event.content_hash) {
+          fail('stored event missing integrity hash');
+        }
+        if (ids.has(event.event_id)) fail('duplicate stored event_id');
+        ids.add(event.event_id);
+      }
       return db;
     } catch (error) {
       if (error.code === 'ENOENT') return { schema_version: SCHEMA_VERSION, events: [] };
