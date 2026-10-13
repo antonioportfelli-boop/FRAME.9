@@ -1,39 +1,9 @@
+import { fetchRdap } from "@/lib/rdap-fetch";
 import { createFileRoute } from "@tanstack/react-router";
+import { asnNumber, kindOf, trimRecord } from "@/lib/rdap";
 
 const GAP_MS = 2000;
 let lastLookup = 0;
-
-function kindOf(query: string): "ip" | "domain" | "autnum" | null {
-  if (/^(?:asn:)?\d{1,10}$/i.test(query)) return "autnum";
-  if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(query) || /^[0-9a-f:]+$/i.test(query)) return "ip";
-  if (/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i.test(query)) return "domain";
-  return null;
-}
-
-function textOf(value: unknown): string | null {
-  if (typeof value === "string" && value.trim()) return value.trim().slice(0, 180);
-  return null;
-}
-
-function trimRecord(body: unknown): Record<string, string | null> {
-  const row = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
-  const vcard = Array.isArray(row.entities) ? row.entities[0] : null;
-  const card = vcard && typeof vcard === "object" ? (vcard as Record<string, unknown>).vcardArray : null;
-  let name: string | null = null;
-  if (Array.isArray(card)) {
-    for (const item of card) {
-      if (Array.isArray(item) && item[0] === "fn" && typeof item[3] === "string") name = item[3].slice(0, 180);
-    }
-  }
-  return {
-    name: textOf(row.name) ?? textOf(row.ldhName) ?? name,
-    handle: textOf(row.handle),
-    type: textOf(row.type),
-    country: textOf(row.country),
-    startAddress: textOf(row.startAddress),
-    endAddress: textOf(row.endAddress),
-  };
-}
 
 export const Route = createFileRoute("/api/rdap")({
   server: {
@@ -57,10 +27,10 @@ export const Route = createFileRoute("/api/rdap")({
         lastLookup = now;
         const path =
           kind === "autnum"
-            ? `https://rdap.org/autnum/${query.replace(/^asn:/i, "")}`
+            ? `https://rdap.org/autnum/${asnNumber(query)}`
             : `https://rdap.org/${kind}/${encodeURIComponent(query)}`;
         try {
-          const response = await fetch(path, { signal: AbortSignal.timeout(8000) });
+          const response = await fetchRdap(path);
           if (!response.ok) {
             return Response.json(
               {

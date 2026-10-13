@@ -201,7 +201,7 @@ type DeskState = {
 
 const KEY = "frame9.desk.v1";
 
-function clampWin(win: Win, vw: number, vh: number): Win {
+export function clampWin(win: Win, vw: number, vh: number): Win {
   const w = Math.max(200, Math.min(win.w, vw - 8));
   const h = Math.max(160, Math.min(win.h, vh - 48));
   return {

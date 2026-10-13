@@ -1,0 +1,29 @@
+# F08-02: weekly dependency PRs into the development branch only (never main).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: "Forge.-9"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Tallinn
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: "deps"
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: "Forge.-9"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Tallinn
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"

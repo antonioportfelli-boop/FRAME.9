@@ -1,0 +1,23 @@
+name: KRATT Memory Evidence V0
+on:
+  pull_request:
+    branches: ["Forge.-9"]
+    paths:
+      - "tools/kratt-memory/**"
+      - ".github/workflows/kratt-memory.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-local-memory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Memory ledger unit/regression tests
+        run: node --test tools/kratt-memory/ledger.test.mjs

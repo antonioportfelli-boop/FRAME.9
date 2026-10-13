@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ApiHostAddressRouteImport } from './routes/api/host-address'
 import { Route as ApiRdapRouteImport } from './routes/api/rdap'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -17,6 +18,11 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHostAddressRoute = ApiHostAddressRouteImport.update({
@@ -37,12 +43,14 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/api/host-address': typeof ApiHostAddressRoute
   '/api/rdap': typeof ApiRdapRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/api/host-address': typeof ApiHostAddressRoute
   '/api/rdap': typeof ApiRdapRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -50,6 +58,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/api/host-address': typeof ApiHostAddressRoute
   '/api/rdap': typeof ApiRdapRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -60,10 +69,15 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/api/host-address' | '/api/rdap' | '/api/auth/$'
   id: '__root__' | '/' | '/api/host-address' | '/api/rdap' | '/api/auth/$'
+  fullPaths: '/' | '/login' | '/api/host-address' | '/api/rdap'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/login' | '/api/host-address' | '/api/rdap'
+  id: '__root__' | '/' | '/login' | '/api/host-address' | '/api/rdap'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
   ApiHostAddressRoute: typeof ApiHostAddressRoute
   ApiRdapRoute: typeof ApiRdapRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -76,6 +90,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/host-address': {
@@ -104,6 +125,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
   ApiHostAddressRoute: ApiHostAddressRoute,
   ApiRdapRoute: ApiRdapRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
