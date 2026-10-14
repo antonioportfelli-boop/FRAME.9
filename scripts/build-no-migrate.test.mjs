@@ -1,3 +1,5 @@
+// Regression: a normal application build must never run database migrations.
+// Deploy-time migration is opt-in through build:deploy and the Vercel buildCommand.
 // Regression: `npm run build` must never run the database migrator. Migration is
 // an explicit deploy step (`db:migrate`, chained only by `build:deploy`, which
 // vercel.json uses as its buildCommand). See F01-02.
@@ -19,6 +21,11 @@ test("build and build:dev do not invoke the migrator", () => {
   }
 });
 
+test("db:migrate remains an explicit migration command", () => {
+  assert.equal(pkg.scripts["db:migrate"], "node scripts/migrate.mjs");
+});
+
+test("deploy builds before running migrations and stops on build failure", () => {
 test("db:migrate still runs scripts/migrate.mjs", () => {
   assert.equal(pkg.scripts["db:migrate"], "node scripts/migrate.mjs");
 });

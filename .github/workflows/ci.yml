@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
+      # Build-only CI must never invoke the database migrator. Keep DATABASE_URL empty
+      # as defense in depth; deployment migration is an explicit separate command.
       # `npm run build` no longer invokes the migrator (that is `build:deploy`).
       # DATABASE_URL stays empty as a second guard: scripts/migrate.mjs skips.
       DATABASE_URL: ""
@@ -36,6 +38,16 @@ jobs:
         run: npm run lint -- --max-warnings=0
       - name: TEST
         run: npm test
+      - name: BUILD (no database migration)
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
+      - name: Assert build did not invoke the migrator
+        run: |
+          if grep -Fq '[migrate]' build.log; then
+            echo 'ERROR: build invoked the database migrator.'
+            exit 1
+          fi
       - name: BUILD
         run: npm run build 2>&1 | tee build.log
       - name: BUILD did not invoke the migrator
