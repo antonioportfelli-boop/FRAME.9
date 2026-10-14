@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const vercel = JSON.parse(readFileSync(join(root, "vercel.json"), "utf8"));
-const MIGRATE = /db:migrate|migrate\\.mjs/;
+const MIGRATE = /db:migrate|migrate\.mjs/;
 
 test("build and build:dev do not invoke the migrator", () => {
   for (const name of ["build", "build:dev"]) {
