@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      # `npm run build` chains `npm run db:migrate`. An empty DATABASE_URL makes
-      # scripts/migrate.mjs skip, so CI can never migrate a real database.
+      # `npm run build` no longer invokes the migrator (that is `build:deploy`).
+      # DATABASE_URL stays empty as a second guard: scripts/migrate.mjs skips.
       DATABASE_URL: ""
     steps:
       - uses: actions/checkout@v4
@@ -38,8 +38,8 @@ jobs:
         run: npm test
       - name: BUILD
         run: npm run build 2>&1 | tee build.log
-      - name: BUILD did not migrate a database
-        run: grep -F "[migrate] DATABASE_URL not set" build.log
+      - name: BUILD did not invoke the migrator
+        run: "! grep -F '[migrate]' build.log"
 
   secret-scan:
     name: secret-scan (gitleaks)
