@@ -27,6 +27,7 @@ test("route is registered in the generated route tree", () => {
 test("built server", async (t) => {
   assert.ok(existsSync(entry), "run `npm run build` first");
   const app = (await import(pathToFileURL(entry).href)).default;
+  /** Send an HTTP request directly through the built server's fetch handler. */
   const call = (path, init = {}) => app.fetch(new Request(ORIGIN + path, init));
 
   await t.test("flag off (VITE_AUTH_ENABLED=false) -> every /api/auth path is 404", async () => {

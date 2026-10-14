@@ -14,6 +14,7 @@ export const RDAP_REQUEST_HEADERS: Readonly<Record<string, string>> = Object.fre
 
 export const RDAP_TIMEOUT_MS = 8000;
 
+/** Fetch an RDAP URL with registry headers and an eight-second timeout signal. */
 export function fetchRdap(url: string, fetchImpl: typeof fetch = fetch): Promise<Response> {
   return fetchImpl(url, {
     headers: { ...RDAP_REQUEST_HEADERS },

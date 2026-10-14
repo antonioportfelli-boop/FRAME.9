@@ -1,12 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { authRouteEnabled, handleAuthRoute } from "@/lib/auth/auth-route";
 
-// Mounts the existing Better Auth instance (`@/lib/auth/server`) at
-// `/api/auth/*`, the path `client.ts` already talks to. Gated by the same
-// VITE_AUTH_ENABLED flag; the server module is loaded only when auth is on.
+/** Dispatch auth requests, loading Better Auth only when authentication is on. */
 function serve({ request }: { request: Request }): Promise<Response> {
   return handleAuthRoute(request, {
     enabled: authRouteEnabled(process.env.VITE_AUTH_ENABLED),
+    /** Load the existing server handler without initializing it for disabled auth. */
     load: async () => (await import("@/lib/auth/server")).auth.handler,
   });
 }

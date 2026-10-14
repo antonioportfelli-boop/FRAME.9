@@ -32,6 +32,7 @@ def read_limited(path: Path) -> str | None:
 
 
 def parse_os_release(raw: str | None) -> dict[str, str | None]:
+    """Extract bounded distribution fields, leaving missing values as None."""
     entries: dict[str, str] = {}
     for line in (raw or "").splitlines():
         if not line or line.lstrip().startswith("#") or "=" not in line:
@@ -46,6 +47,7 @@ def parse_os_release(raw: str | None) -> dict[str, str | None]:
 
 
 def parse_meminfo(raw: str | None) -> dict[str, int | None]:
+    """Convert total and available memory from procfs kB to whole MiB."""
     mem: dict[str, int] = {}
     for line in (raw or "").splitlines():
         match = re.fullmatch(r"(MemTotal|MemAvailable):\s*(\d+)\s+kB\s*", line)
@@ -55,6 +57,7 @@ def parse_meminfo(raw: str | None) -> dict[str, int | None]:
 
 
 def parse_cpu_model(raw: str | None) -> str | None:
+    """Find a bounded CPU model label, ignoring numeric processor indices."""
     lines = (raw or "").splitlines()
     for prefix in ("model name", "hardware", "processor"):
         for line in lines:
@@ -103,6 +106,7 @@ def collect_snapshot(*, include_hostname: bool = False, proc: Path = Path("/proc
 
 
 def make_handler(token: str, snapshot_provider: Callable[[], dict] = collect_snapshot) -> type[BaseHTTPRequestHandler]:
+    """Build a local HTTP handler, rejecting tokens shorter than 32 characters."""
     if len(token) < 32:
         raise ValueError("FRAME9_HOST_AGENT_TOKEN must contain at least 32 characters")
 
@@ -111,10 +115,12 @@ def make_handler(token: str, snapshot_provider: Callable[[], dict] = collect_sna
         sys_version = ""
 
         def log_message(self, *_args: object) -> None:
+            """Suppress request logging to keep credentials and host data out of logs."""
             # Never log Authorization header or host data.
             return
 
         def send_json(self, code: int, payload: dict) -> None:
+            """Send JSON with its status, byte length, and no-store response headers."""
             body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
             self.send_response(code)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -126,6 +132,7 @@ def make_handler(token: str, snapshot_provider: Callable[[], dict] = collect_sna
             self.wfile.write(body)
 
         def do_GET(self) -> None:
+            """Serve health or snapshot JSON after local-host and bearer-token checks."""
             # Explicitly reject browser origins and non-loopback host headers.
             host = (self.headers.get("Host") or "").split(":", 1)[0].lower()
             if self.headers.get("Origin") is not None or host not in {"localhost", "127.0.0.1"}:
@@ -146,6 +153,7 @@ def make_handler(token: str, snapshot_provider: Callable[[], dict] = collect_sna
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Print a snapshot or run the authenticated loopback server until interrupted."""
     parser = argparse.ArgumentParser(description="FRAME.9 local Linux kernel/hardware discovery, read-only")
     parser.add_argument("command", choices=["snapshot", "serve"])
     parser.add_argument("--include-hostname", action="store_true", help="Opt in to hostname in output")

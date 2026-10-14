@@ -5,8 +5,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { RDAP_USER_AGENT, RDAP_TIMEOUT_MS, fetchRdap } from "../src/lib/rdap-fetch.ts";
 
+/** Create a successful fetch stub and a log of the requests it receives. */
 function stub() {
   const calls = [];
+  /** Capture a request and return an empty JSON response without network access. */
   const impl = async (url, init) => {
     calls.push({ url, init });
     return new Response("{}", { status: 200 });

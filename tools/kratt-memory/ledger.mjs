@@ -14,14 +14,18 @@ const STATUSES = new Set(['VERIFIED', 'PARTIAL', 'BLOCKED', 'NOT_RUN', 'FAILED']
 const MAX_EVENT_BYTES = 16_384;
 const SECRET = /(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-(?:proj-)?[A-Za-z0-9_-]{16,}|Bearer\s+\S{8,}|(?:api[_-]?key|password|secret|token)\s*[=:]\s*['"]?[^\s,'"}]{8,})/i;
 
+/** Throw a validation error with a consistent ledger-specific prefix. */
 function fail(message) { throw new Error(`KRATT_VALIDATION: ${message}`); }
+/** Recursively sort object keys while preserving array order for hashing. */
 function stable(value) {
   if (Array.isArray(value)) return value.map(stable);
   if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().map(k => [k, stable(value[k])]));
   return value;
 }
+/** Return the SHA-256 hex digest of a value's stable JSON representation. */
 function hash(value) { return createHash('sha256').update(JSON.stringify(stable(value))).digest('hex'); }
 
+/** Validate and clone an event, adding or verifying its content hash before storage. */
 export function normalizeEvent(event) {
   if (!event || typeof event !== 'object' || Array.isArray(event)) fail('event must be object');
   const fields = [...REQUIRED_FIELDS, 'content_hash'];
@@ -69,7 +73,9 @@ export function normalizeEvent(event) {
 
 /** Single-process/single-writer JSON adapter. DO NOT use as network service. */
 export class JsonMemoryBank {
+  /** Select the local JSON file, rejecting an empty file path. */
   constructor(filePath) { if (!filePath) fail('file path required'); this.path = filePath; }
+  /** Read and validate every stored event, treating a missing file as an empty bank. */
   async _read() {
     try {
       const db = JSON.parse(await readFile(this.path, 'utf8'));
@@ -89,6 +95,7 @@ export class JsonMemoryBank {
       throw error;
     }
   }
+  /** Persist JSON through a restricted temporary file and rename it into place. */
   async _write(db) {
     await mkdir(dirname(this.path), { recursive: true, mode: 0o700 });
     const temp = `${this.path}.${process.pid}.tmp`;
@@ -96,6 +103,7 @@ export class JsonMemoryBank {
     try { await chmod(temp, 0o600); await rename(temp, this.path); }
     catch (err) { await import('node:fs/promises').then(fs => fs.unlink(temp).catch(() => {})); throw err; }
   }
+  /** Insert a validated event, accepting identical retries and rejecting ID collisions. */
   async ingest(event) {
     const normalized = normalizeEvent(event);
     const db = await this._read();
@@ -108,6 +116,7 @@ export class JsonMemoryBank {
     await this._write(db);
     return { inserted: true, content_hash: normalized.content_hash };
   }
+  /** Return validated events, optionally filtering by visibility scope. */
   async list({ visibility_scope } = {}) {
     const db = await this._read();
     return db.events.filter(e => !visibility_scope || e.visibility_scope === visibility_scope);

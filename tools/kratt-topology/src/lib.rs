@@ -22,6 +22,7 @@ pub enum TopologyError {
 }
 
 impl std::fmt::Display for TopologyError {
+    /// Format the error using its diagnostic variant name.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{self:?}")
     }
@@ -36,6 +37,7 @@ pub struct TalmudDialectic {
 }
 
 impl TalmudDialectic {
+    /// Create mixing weights, rejecting nonfinite values or values outside 0..=16.
     pub fn new(hillel_leniency: f64, shammai_rigor: f64) -> Result<Self, TopologyError> {
         if !hillel_leniency.is_finite()
             || !shammai_rigor.is_finite()
@@ -59,6 +61,7 @@ impl TalmudDialectic {
 }
 
 impl Default for TalmudDialectic {
+    /// Use the golden ratio and pi as the default mixing weights.
     fn default() -> Self {
         Self {
             hillel_leniency: (1.0 + 5.0_f64.sqrt()) / 2.0,
@@ -73,6 +76,7 @@ pub struct AntikytheraEngine {
 }
 
 impl AntikytheraEngine {
+    /// Create an engine with a finite pin offset in -1..=1.
     pub fn new(pin_offset: f64) -> Result<Self, TopologyError> {
         if !pin_offset.is_finite() || !(-1.0..=1.0).contains(&pin_offset) {
             return Err(TopologyError::InvalidOffset);
@@ -95,6 +99,7 @@ impl AntikytheraEngine {
 }
 
 impl Default for AntikytheraEngine {
+    /// Use the prototype's fixed pin offset of 0.1547.
     fn default() -> Self {
         Self { pin_offset: 0.1547 }
     }
@@ -118,6 +123,7 @@ pub struct ColumnNeuralMatrix {
 }
 
 impl ColumnNeuralMatrix {
+    /// Initialize all nodes deterministically at epoch zero under one mutex.
     pub fn new() -> Self {
         Self {
             state: Mutex::new(MatrixState {
@@ -129,11 +135,14 @@ impl ColumnNeuralMatrix {
         }
     }
 
+    /// Copy a coherent epoch and node array, failing if the mutex is poisoned.
     pub fn snapshot(&self) -> Result<MatrixSnapshot, TopologyError> {
         let state = self.state.lock().map_err(|_| TopologyError::PoisonedState)?;
         Ok(MatrixSnapshot { epoch: state.epoch, nodes: state.nodes })
     }
 
+    /// Update all nodes under one lock, advancing the epoch and diagnostic tag.
+    /// Reject nonfinite deltas, poisoned state, and epoch overflow before mutation.
     fn shift(
         &self,
         alpha: f64,
@@ -170,6 +179,7 @@ impl ColumnNeuralMatrix {
 }
 
 impl Default for ColumnNeuralMatrix {
+    /// Construct the same deterministic initial matrix as `new`.
     fn default() -> Self {
         Self::new()
     }
@@ -190,6 +200,7 @@ pub struct SovereignSecurityBridge {
 }
 
 impl SovereignSecurityBridge {
+    /// Combine the supplied engine and weights with a fresh deterministic matrix.
     pub fn new(engine: AntikytheraEngine, talmud: TalmudDialectic) -> Self {
         Self { matrix: ColumnNeuralMatrix::new(), engine, talmud }
     }
@@ -203,6 +214,7 @@ impl SovereignSecurityBridge {
 }
 
 impl Default for SovereignSecurityBridge {
+    /// Create a fresh bridge with the default engine and mixing weights.
     fn default() -> Self {
         Self::new(AntikytheraEngine::default(), TalmudDialectic::default())
     }
@@ -210,6 +222,7 @@ impl Default for SovereignSecurityBridge {
 
 static GLOBAL_BRIDGE: OnceLock<SovereignSecurityBridge> = OnceLock::new();
 
+/// Return the process-wide bridge, initializing it once with default settings.
 pub fn global_bridge() -> &'static SovereignSecurityBridge {
     GLOBAL_BRIDGE.get_or_init(SovereignSecurityBridge::default)
 }
@@ -218,6 +231,7 @@ pub fn global_bridge() -> &'static SovereignSecurityBridge {
 mod tests {
     use super::*;
 
+    /// Replay identical observations to produce matching receipts and final states.
     #[test]
     fn deterministic_replay_of_identical_observations() {
         let left = SovereignSecurityBridge::default();
@@ -228,12 +242,14 @@ mod tests {
         assert_eq!(left.matrix.snapshot().unwrap(), right.matrix.snapshot().unwrap());
     }
 
+    /// Verify the orbital vectors sum to zero by construction.
     #[test]
     fn complementary_orbital_vectors() {
         let (a, b) = AntikytheraEngine::default().calculate_orbital_skew(2.3).unwrap();
         assert_eq!(a + b, 0.0);
     }
 
+    /// Reject invalid parameters without advancing the matrix epoch.
     #[test]
     fn rejects_nonfinite_and_out_of_range_parameters() {
         let bridge = SovereignSecurityBridge::default();
@@ -244,6 +260,7 @@ mod tests {
         assert_eq!(bridge.matrix.snapshot().unwrap().epoch, 0);
     }
 
+    /// Verify one observation advances the epoch and changes every matrix node.
     #[test]
     fn all_nodes_are_updated_in_single_coherent_transition() {
         let bridge = SovereignSecurityBridge::default();
@@ -255,6 +272,7 @@ mod tests {
         assert!(before.nodes.iter().zip(after.nodes.iter()).all(|(a,b)| a != b));
     }
 
+    /// Compare concurrent identical observations with their serial final state.
     #[test]
     fn concurrent_identical_observations_match_serial_state() {
         let parallel = SovereignSecurityBridge::default();

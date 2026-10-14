@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { authRouteEnabled, handleAuthRoute } from "./auth-route.ts";
 
+/** Create a fresh session request for each auth dispatch assertion. */
 const req = () => new Request("http://localhost:8080/api/auth/get-session");
 
 describe("authRouteEnabled (same predicate as server.ts)", () => {
@@ -21,6 +22,7 @@ describe("handleAuthRoute", () => {
     let loaded = false;
     const res = await handleAuthRoute(req(), {
       enabled: false,
+      /** Record any unexpected server load while authentication is disabled. */
       load: async () => {
         loaded = true;
         return async () => new Response("leak", { status: 200 });
@@ -34,6 +36,7 @@ describe("handleAuthRoute", () => {
     let seen: Request | null = null;
     const res = await handleAuthRoute(request, {
       enabled: true,
+      /** Supply a handler that records the forwarded request and denies access. */
       load: async () => async (r) => {
         seen = r;
         return new Response(null, { status: 401 });

@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+/** Read route source as UTF-8 relative to the repository root. */
 const read = (p) => readFileSync(join(root, p), "utf8");
 
 test("SIGN_IN_PATH is /login and the route tree registers it", () => {

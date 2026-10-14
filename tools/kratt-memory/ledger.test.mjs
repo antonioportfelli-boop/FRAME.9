@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { JsonMemoryBank, normalizeEvent } from './ledger.mjs';
 
+/** Build a fresh public, verified event fixture with synthetic evidence. */
 const base = () => ({
   schema_version: '1.0.0', event_id: 'evt:fixture:1',
   timestamp_utc: '2026-10-11T10:00:00Z', actor_id: 'agent:test', actor_type: 'agent',

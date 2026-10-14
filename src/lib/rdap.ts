@@ -12,6 +12,7 @@ export function asnNumber(query: string): string | null {
   return match[1];
 }
 
+/** Accept four decimal IPv4 octets, each in the range 0..255. */
 function isIPv4(query: string): boolean {
   const parts = query.split(".");
   return parts.length === 4 && parts.every((p) => /^\d{1,3}$/.test(p) && Number(p) <= 255);
@@ -28,6 +29,7 @@ function isIPv6(query: string): boolean {
   }
 }
 
+/** Classify an RDAP query, returning null for unsupported or malformed input. */
 export function kindOf(query: string): "ip" | "domain" | "autnum" | null {
   if (asnNumber(query) !== null) return "autnum";
   if (isIPv4(query) || isIPv6(query)) return "ip";
@@ -35,11 +37,13 @@ export function kindOf(query: string): "ip" | "domain" | "autnum" | null {
   return null;
 }
 
+/** Trim a nonblank string to 180 characters, returning null for other values. */
 export function textOf(value: unknown): string | null {
   if (typeof value === "string" && value.trim()) return value.trim().slice(0, 180);
   return null;
 }
 
+/** Extract bounded registrant fields, with a first-entity vCard name fallback. */
 export function trimRecord(body: unknown): Record<string, string | null> {
   const row = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
   const vcard = Array.isArray(row.entities) ? row.entities[0] : null;
