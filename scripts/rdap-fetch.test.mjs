@@ -5,6 +5,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { RDAP_USER_AGENT, RDAP_TIMEOUT_MS, fetchRdap } from "../src/lib/rdap-fetch.ts";
 
+function stub() {
+  const calls = [];
 /** Create a successful fetch stub and a log of the requests it receives. */
 function stub() {
   const calls = [];
