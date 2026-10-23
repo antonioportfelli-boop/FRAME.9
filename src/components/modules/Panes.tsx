@@ -18,6 +18,7 @@ import { RadioPane } from "./RadioPane";
 import { TelevisionPane } from "./TelevisionPane";
 import { NodePane } from "./NodePane";
 
+/** Render the module's pane, forwarding activity to the audio and video panes. */
 export function ModuleBody({ id, active }: { id: ModuleId; active: boolean }) {
   // Exhaustive over ModuleId: adding a module without a pane is a compile error
   // instead of silently rendering NodePane.

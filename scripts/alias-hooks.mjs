@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const SRC = fileURLToPath(new URL("../src/", import.meta.url));
 
+/** Resolve app aliases to existing source files, delegating other imports to Node. */
 export async function resolve(specifier, context, next) {
   if (specifier.startsWith("@/")) {
     const base = join(SRC, specifier.slice(2));

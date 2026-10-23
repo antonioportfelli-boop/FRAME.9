@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
+/** Read a repository file as UTF-8 for validation-command assertions. */
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 const pkg = JSON.parse(read("package.json"));
 

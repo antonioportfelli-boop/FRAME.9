@@ -1,0 +1,30 @@
+name: KRATT Rust topology evidence
+
+on:
+  pull_request:
+    paths:
+      - "tools/kratt-topology/**"
+      - ".github/workflows/kratt-topology.yml"
+  push:
+    branches:
+      - "feature/kratt-antikythera-topology-v0"
+    paths:
+      - "tools/kratt-topology/**"
+      - ".github/workflows/kratt-topology.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  rust-topology:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Compile and run deterministic tests (offline)
+        run: cargo test --manifest-path tools/kratt-topology/Cargo.toml --all-targets --offline
+      - name: Static lint checks (offline)
+        run: cargo clippy --manifest-path tools/kratt-topology/Cargo.toml --all-targets --offline -- -D warnings

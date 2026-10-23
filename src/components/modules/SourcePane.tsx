@@ -7,9 +7,11 @@ import {
   archiveUrl,
 } from "@/lib/source";
 
+/** Show repository links, branch downloads, and a copyable clone command. */
 export function SourcePane() {
   const [status, setStatus] = useState<string | null>(null);
 
+  /** Copy the clone command and report success or a manual-copy fallback. */
   async function copyClone() {
     try {
       await navigator.clipboard.writeText(CLONE);

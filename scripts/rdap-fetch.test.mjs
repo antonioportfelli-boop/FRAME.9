@@ -7,6 +7,10 @@ import { RDAP_USER_AGENT, RDAP_TIMEOUT_MS, fetchRdap } from "../src/lib/rdap-fet
 
 function stub() {
   const calls = [];
+/** Create a successful fetch stub and a log of the requests it receives. */
+function stub() {
+  const calls = [];
+  /** Capture a request and return an empty JSON response without network access. */
   const impl = async (url, init) => {
     calls.push({ url, init });
     return new Response("{}", { status: 200 });

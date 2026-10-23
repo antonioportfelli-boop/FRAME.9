@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
+/** Read repository documentation as UTF-8 for source-reference assertions. */
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 const DOCS = ["README.md", "REMIX.md", "CODEBASE_MAP.md", "AGENTS.md"];
 

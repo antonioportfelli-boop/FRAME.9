@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
+/** Read toolchain configuration or documentation as UTF-8 for version assertions. */
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 
 test(".nvmrc pins major 22 and CI reads it", () => {

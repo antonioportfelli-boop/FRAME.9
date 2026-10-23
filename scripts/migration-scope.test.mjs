@@ -9,6 +9,7 @@ import { pendingMigrations } from "./migration-plan.mjs";
 import { projectRoot } from "./with-app-env.mjs";
 
 const root = projectRoot();
+/** Read a repository file as UTF-8 for migration-scope assertions. */
 const read = (p) => readFileSync(join(root, p), "utf8");
 
 test("deploy applier (migrate.mjs) uses a plain, non-recursive readdir", () => {

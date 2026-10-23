@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
+/** Read module source as UTF-8 for exhaustive pane-dispatch assertions. */
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 const union = read("src/lib/signal/types.ts").match(/export type ModuleId =([^;]+);/)[1];
 const ids = [...union.matchAll(/"([a-z]+)"/g)].map((m) => m[1]);

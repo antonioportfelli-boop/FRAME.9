@@ -8,6 +8,7 @@ let lastLookup = 0;
 export const Route = createFileRoute("/api/rdap")({
   server: {
     handlers: {
+      /** Validate and rate-limit a lookup, returning a bounded record or an error. */
       GET: async ({ request }) => {
         const query = new URL(request.url).searchParams.get("q")?.trim().slice(0, 253) ?? "";
         const kind = kindOf(query);
