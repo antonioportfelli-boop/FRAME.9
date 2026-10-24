@@ -19,12 +19,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      # `npm run build` chains `npm run db:migrate`. An empty DATABASE_URL makes
-      # scripts/migrate.mjs skip, so CI can never migrate a real database.
+      # Build-only CI must never invoke the database migrator. Keep DATABASE_URL empty
+      # as defense in depth; deployment migration is an explicit separate command.
+      # `npm run build` no longer invokes the migrator (that is `build:deploy`).
+      # DATABASE_URL stays empty as a second guard: scripts/migrate.mjs skips.
       DATABASE_URL: ""
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -36,10 +40,20 @@ jobs:
         run: npm run lint -- --max-warnings=0
       - name: TEST
         run: npm test
+      - name: BUILD (no database migration)
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
+      - name: Assert build did not invoke the migrator
+        run: |
+          if grep -Fq '[migrate]' build.log; then
+            echo 'ERROR: build invoked the database migrator.'
+            exit 1
+          fi
       - name: BUILD
         run: npm run build 2>&1 | tee build.log
-      - name: BUILD did not migrate a database
-        run: grep -F "[migrate] DATABASE_URL not set" build.log
+      - name: BUILD did not invoke the migrator
+        run: "! grep -F '[migrate]' build.log"
 
   secret-scan:
     name: secret-scan (gitleaks)
@@ -49,7 +63,7 @@ jobs:
       GITLEAKS_VERSION: 8.28.0
       GITLEAKS_SHA256: a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Install gitleaks (checksum-pinned)
@@ -84,6 +98,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
