@@ -7,13 +7,41 @@ on:
     branches: ["Forge.-9", "dev/frame9-audit-2026-10"]
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  lockfile-sync:
+    name: Repair and verify npm lockfile
+    if: github.event_name == 'push' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Regenerate complete lockfile
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Verify clean install from regenerated lockfile
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Commit repaired lockfile
+        run: |
+          if ! git diff --quiet -- package-lock.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "chore: regenerate complete npm lockfile"
+            git push
+          else
+            echo "Lockfile already complete and reproducible."
+          fi
+
   gates:
     name: gates (Node 22)
     runs-on: ubuntu-latest
