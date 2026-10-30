@@ -1,0 +1,80 @@
+apiVersion: trinitywayve.dev/v1alpha1
+kind: ResearchModule
+metadata:
+  name: frame9-neurosemantic-lab
+  version: 0.1.0
+  owner: 3XTRINITY
+  status: simulation-only
+spec:
+  purpose: "Textual-semantic research plus isolated synthetic signal experiments"
+  safety:
+    clinicalUse: prohibited
+    physicalDeviceAccess: disabled
+    neurostimulation: disabled
+    diagnosis: disabled
+    productionPatientData: disabled
+    networkListeners: disabled
+    deploymentMode: local-simulation
+  domains:
+    textual:
+      enabled: true
+      storageNamespace: text-graph
+      sourcePolicy: allow-listed-and-licensed
+      requiresProvenance: true
+      interpretationMode: candidate-only
+      humanReviewRequired: true
+    biomedical:
+      enabled: true
+      sourceMode: synthetic-only
+      storageNamespace: synthetic-observations
+      rawPersonalData: prohibited
+      fhirExport: disabled
+  plugins:
+    - id: text-source-sefaria
+      version: 0.1.0
+      enabled: false
+      capability: text.read
+      network: allow-list-required
+    - id: genealogy-graph
+      version: 0.1.0
+      enabled: false
+      capability: graph.assertion.read-write
+      network: none
+    - id: hermeneutic-candidate-engine
+      version: 0.1.0
+      enabled: false
+      capability: interpretation.candidate
+      network: none
+      humanApproval: required
+    - id: synthetic-signal-source
+      version: 0.1.0
+      enabled: true
+      capability: observation.synthetic.write
+      network: none
+    - id: neuro-device-adapter
+      version: 0.0.0
+      enabled: false
+      capability: none
+      reason: "Not implemented; requires separate device-specific safety case"
+    - id: fhir-gateway
+      version: 0.0.0
+      enabled: false
+      capability: none
+      reason: "No validated interoperability profile yet"
+  orchestration:
+    planner: kratt
+    execution: dry-run-only
+    workerIsolation: process-or-wasm
+    artifactPinning: git-sha-and-oci-digest
+    rolloutRequiresApproval: true
+    rollbackRequiresValidation: true
+  observability:
+    auditEvents: true
+    redactSecrets: true
+    includePersonalIdentifiers: false
+    metrics:
+      - schema_validation_rate
+      - provenance_completeness
+      - deterministic_run_rate
+      - plugin_capability_denials
+      - rollback_drill_success
