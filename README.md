@@ -44,3 +44,11 @@ Imported from the complete-source download published at https://lunar-kite-nova-
 The import preserves the existing repository license. Original export archives and historical build reports are kept outside the repository; this repository contains the editable application.
 
 Synthetic demo data is labeled. Browser device access requires the user's own permission. A webpage cannot run WireGuard or obtain operating-system privileges. Live Slack/Linear writes, account integration and physical device access were not exercised during this import.
+
+## Research architecture
+
+- [3XTRINITY neuro-semantic architecture (proposal, simulation-only)](docs/architecture/FRAME9-TRINITY-NEUROSEMANTIC-ARCHITECTURE.md)
+- [Local research-module manifest](config/trinity/frame9-neurosemantic-lab.yaml)
+- [Synthetic observation JSON Schema](schemas/neurosemantic-observation.schema.json)
+
+The research module is not a medical device and has no physical neurochip, implant, stimulation, diagnosis or clinical decision-support integration.
