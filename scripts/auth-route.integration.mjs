@@ -16,7 +16,7 @@ const ORIGIN = "http://localhost:8080";
 // unhandled rejection) — the denials below must come from Better Auth itself.
 // (Without DATABASE_URL the built output falls back to PGLite, whose data files
 // are not traced into .vercel/output — tracked separately as baseline debt.)
-process.env.DATABASE_URL = "postgres://frame9:unused@127.0.0.1:9/none";
+assert.ok(process.env.DATABASE_URL, "CI must provide an isolated PostgreSQL DATABASE_URL");
 
 test("route is registered in the generated route tree", () => {
   assert.ok(existsSync(join(root, "src/routes/api/auth/$.ts")));
