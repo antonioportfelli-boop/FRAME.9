@@ -141,11 +141,16 @@ export async function signIn(
     return;
   }
 
-  const { data, error } = await authClient.signIn.oauth2({
-    providerId,
-    callbackURL,
-    errorCallbackURL,
-  });
+  // The server's genericOAuth plugin exposes this endpoint, but Better Auth
+  // 1.7.x no longer ships the old genericOAuthClient helper. Keep the typed
+  // boundary local while preserving the documented runtime endpoint.
+  const startOAuth = (authClient.signIn as unknown as {
+    oauth2: (input: { providerId: string; callbackURL: string; errorCallbackURL: string }) => Promise<{
+      data?: { url?: string } | null;
+      error?: { message?: string } | null;
+    }>;
+  }).oauth2;
+  const { data, error } = await startOAuth({ providerId, callbackURL, errorCallbackURL });
   if (error) throw new Error(error.message ?? "Sign-in failed");
   if (data?.url) window.location.href = data.url;
 }
