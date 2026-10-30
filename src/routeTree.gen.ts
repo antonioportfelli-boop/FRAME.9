@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as TrinityRouteImport } from './routes/trinity'
 import { Route as ApiHostAddressRouteImport } from './routes/api/host-address'
 import { Route as ApiRdapRouteImport } from './routes/api/rdap'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -18,6 +19,11 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrinityRoute = TrinityRouteImport.update({
+  id: '/trinity',
+  path: '/trinity',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -43,6 +49,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/trinity': typeof TrinityRoute
   '/login': typeof LoginRoute
   '/api/host-address': typeof ApiHostAddressRoute
   '/api/rdap': typeof ApiRdapRoute
@@ -65,10 +72,10 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/host-address' | '/api/rdap' | '/api/auth/$'
+  fullPaths: '/' | '/trinity' | '/api/host-address' | '/api/rdap' | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/host-address' | '/api/rdap' | '/api/auth/$'
-  id: '__root__' | '/' | '/api/host-address' | '/api/rdap' | '/api/auth/$'
+  to: '/' | '/trinity' | '/api/host-address' | '/api/rdap' | '/api/auth/$'
+  id: '__root__' | '/' | '/trinity' | '/api/host-address' | '/api/rdap' | '/api/auth/$'
   fullPaths: '/' | '/login' | '/api/host-address' | '/api/rdap'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/login' | '/api/host-address' | '/api/rdap'
@@ -77,6 +84,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TrinityRoute: typeof TrinityRoute
   LoginRoute: typeof LoginRoute
   ApiHostAddressRoute: typeof ApiHostAddressRoute
   ApiRdapRoute: typeof ApiRdapRoute
@@ -90,6 +98,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trinity': {
+      id: '/trinity'
+      path: '/trinity'
+      fullPath: '/trinity'
+      preLoaderRoute: typeof TrinityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -125,6 +140,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TrinityRoute: TrinityRoute,
   LoginRoute: LoginRoute,
   ApiHostAddressRoute: ApiHostAddressRoute,
   ApiRdapRoute: ApiRdapRoute,
