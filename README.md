@@ -52,3 +52,12 @@ Synthetic demo data is labeled. Browser device access requires the user's own pe
 - [Synthetic observation JSON Schema](schemas/neurosemantic-observation.schema.json)
 
 The research module is not a medical device and has no physical neurochip, implant, stimulation, diagnosis or clinical decision-support integration.
+
+## Trinity workspace prototype
+
+- Open the responsive research workspace at `/trinity` after starting the app.
+- [UI architecture](docs/ui/FRAME9-TRINITY-UI-SYSTEM.md)
+- [Figma implementation brief](docs/ui/FRAME9-TRINITY-FIGMA-BRIEF.md)
+- [Trinity UI data contracts](src/lib/trinity-ui.ts)
+
+The Trinity route is a development prototype. It uses illustrative local fixture content; no external corpus, clinical data, physical device, or production command execution is connected.
