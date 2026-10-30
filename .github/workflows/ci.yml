@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: ["Forge.-9", "dev/frame9-audit-2026-10"]
   push:
-    branches: ["Forge.-9"]
+    branches: ["Forge.-9", "dev/frame9-audit-2026-10"]
 
 permissions:
   contents: read
