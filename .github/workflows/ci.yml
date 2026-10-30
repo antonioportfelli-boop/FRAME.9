@@ -31,7 +31,7 @@ jobs:
       - name: Regenerate complete lockfile
         run: |
           rm -f package-lock.json
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm install --ignore-scripts --no-audit --no-fund
       - name: Verify clean install from regenerated lockfile
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Commit repaired lockfile
