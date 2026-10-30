@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   Bluetooth,
   Cpu,
@@ -502,6 +503,7 @@ export function Desk() {
       </main>
 
       <nav className="safe-dock z-50 flex shrink-0 gap-1 overflow-x-auto border-t border-line bg-bg px-2" aria-label="Modules">
+        <Link to="/trinity" className="flex h-14 min-w-16 shrink-0 flex-col items-center justify-center gap-1 text-teal" aria-label="Open Trinity workspace"><Activity className="size-4" /><span className="font-mono text-xs">Trinity</span></Link>
         <button
           type="button"
           className="flex h-14 min-w-14 shrink-0 flex-col items-center justify-center gap-1 text-muted"
