@@ -21,7 +21,9 @@
     "test:auth-route": "node --test scripts/auth-route.integration.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "build:deploy": "npm run build && npm run db:migrate"
+    "build:deploy": "npm run build && npm run db:migrate",
+    "trinity:test": "node --test scripts/trinity/semantic-engine.test.mjs",
+    "trinity:validate": "node --check scripts/trinity/semantic-engine.mjs && node --test scripts/trinity/semantic-engine.test.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",
