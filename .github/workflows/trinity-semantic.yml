@@ -1,0 +1,22 @@
+name: Trinity semantic prototype
+on:
+  push:
+    branches:
+      - dev/frame9-audit-2026-10
+  pull_request:
+    branches:
+      - dev/frame9-audit-2026-10
+jobs:
+  semantic-prototype:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax check
+        run: node --check scripts/trinity/semantic-engine.mjs
+      - name: Unit tests
+        run: node --test scripts/trinity/semantic-engine.test.mjs
+      - name: Validate package metadata
+        run: node -e "JSON.parse(require('node:fs').readFileSync('package.json', 'utf8'))"
