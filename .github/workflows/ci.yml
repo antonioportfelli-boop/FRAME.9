@@ -87,8 +87,23 @@ jobs:
     name: auth-route (built /api/auth)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: frame9
+          POSTGRES_PASSWORD: frame9
+          POSTGRES_DB: frame9_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U frame9 -d frame9_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
-      DATABASE_URL: ""
+      DATABASE_URL: postgres://frame9:frame9@localhost:5432/frame9_test
+      VITE_AUTH_ENABLED: "true"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -97,6 +112,10 @@ jobs:
           cache: npm
       - name: INSTALL
         run: npm install --no-audit --no-fund
+      - name: Prepare isolated auth schema
+        run: |
+          cp migrations/auth/0001_auth.sql migrations/0001_auth.sql
+          npm run db:migrate
       - name: BUILD
         run: npm run build
       - name: AUTH (route present, flag off -> 404, unauthenticated denied)
