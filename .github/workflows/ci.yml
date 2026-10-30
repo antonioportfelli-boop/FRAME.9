@@ -31,7 +31,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - name: INSTALL
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
       - name: TYPECHECK
         run: npm run typecheck
       - name: LINT
@@ -96,7 +96,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - name: INSTALL
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
       - name: BUILD
         run: npm run build
       - name: AUTH (route present, flag off -> 404, unauthenticated denied)
