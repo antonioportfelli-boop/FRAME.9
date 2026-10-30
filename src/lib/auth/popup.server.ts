@@ -62,7 +62,16 @@ export async function handleAuthPopupRequest(request: Request): Promise<Response
   // Stay first-party for the callback so the session cookie lands in THIS popup.
   const back = `${url.origin}/auth/popup?done=1`;
   try {
-    const apiRes = await auth.api.signInWithOAuth2({
+    // genericOAuth contributes this endpoint at runtime; its generated API
+    // type is absent in the installed Better Auth 1.7.x declarations.
+    const startOAuth = (auth.api as unknown as {
+      signInWithOAuth2: (input: {
+        body: { providerId: string; callbackURL: string; errorCallbackURL: string };
+        headers: Headers;
+        asResponse: true;
+      }) => Promise<Response>;
+    }).signInWithOAuth2;
+    const apiRes = await startOAuth({
       body: {
         providerId,
         callbackURL: back,
