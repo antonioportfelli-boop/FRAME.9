@@ -42,6 +42,12 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  // TanStack route modules export the route object next to components, so fast
+  // refresh can never apply to them; the warning is structural, not a defect.
+  {
+    files: ["src/routes/**/*.{ts,tsx}"],
+    rules: { "react-refresh/only-export-components": "off" },
+  },
   // Disable rules that conflict with Prettier formatting.
   prettier,
 );
