@@ -1,0 +1,16 @@
+{
+  "state": "inactive_scaffold",
+  "default_decision": "deny",
+  "activation_supported": false,
+  "requirements": {
+    "policy_engine": true,
+    "audit_logging": true,
+    "human_approval": true,
+    "secret_protection": true,
+    "reversible_changes": true,
+    "independent_validation": true,
+    "self_approval": false,
+    "production_deployment": false
+  },
+  "note": "Declared requirements, not implemented integrations or enforcement services. The local policy entrypoint denies every operational request."
+}
