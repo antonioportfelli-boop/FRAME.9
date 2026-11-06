@@ -1,0 +1,126 @@
+{
+  "state": "inactive_scaffold",
+  "note": "Placeholder slot IDs only; roles and runtime assignments are not specified. No live agents.",
+  "agents": [
+    {
+      "id": "kratt-01",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-02",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-03",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-04",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-05",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-06",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-07",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-08",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-09",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-10",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-11",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-12",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-13",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-14",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    },
+    {
+      "id": "kratt-15",
+      "state": "unimplemented",
+      "enabled": false,
+      "role": null,
+      "independent_validation_required": true,
+      "self_approval": false
+    }
+  ]
+}

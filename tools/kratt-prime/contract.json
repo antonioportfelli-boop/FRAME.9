@@ -1,0 +1,102 @@
+{
+  "name": "KRATT_PRIME",
+  "release": "MEGALITHIC-v1.0",
+  "status": "IMPLEMENTATION_SPECIFICATION",
+  "source": {
+    "kind": "approved_spec_summary",
+    "verbatim": false,
+    "note": "Encodes the available approved summary, not an original verbatim specification."
+  },
+  "implementation": {
+    "state": "inactive_scaffold",
+    "operational": false
+  },
+  "architecture": {
+    "type": "hybrid",
+    "orchestration": "centralized",
+    "execution": "distributed",
+    "reasoning": "multi_model",
+    "autonomy": "high_with_policy_controls"
+  },
+  "engines": [
+    "reasoning",
+    "scientific",
+    "mathematical",
+    "simulation",
+    "optimization",
+    "adversarial",
+    "evidence"
+  ],
+  "competition": {
+    "profiles": [
+      "musk_first_principles",
+      "bezos_customer_scale",
+      "kratt_hybrid"
+    ],
+    "requirements": [
+      "equal_compute_budget",
+      "blind_evaluation",
+      "independent_validation",
+      "reproducibility",
+      "evidence_required"
+    ],
+    "implemented": false
+  },
+  "agents": {
+    "count": 15,
+    "independent_validation": true,
+    "self_approval": false
+  },
+  "integrations": {
+    "telegram": {
+      "role": "command_interface",
+      "state": "unimplemented",
+      "enabled": false
+    },
+    "grok": {
+      "role": "ai_adapter",
+      "state": "unimplemented",
+      "enabled": false
+    },
+    "frame9": {
+      "role": "shared_platform",
+      "state": "unimplemented",
+      "enabled": false
+    },
+    "aura": {
+      "role": "runtime",
+      "state": "unimplemented",
+      "enabled": false
+    },
+    "steel": {
+      "role": "mobile_runtime",
+      "state": "unimplemented",
+      "enabled": false
+    },
+    "cerberus": {
+      "role": "android",
+      "state": "unimplemented",
+      "enabled": false
+    },
+    "goliath_os": {
+      "role": "orchestration",
+      "state": "unimplemented",
+      "enabled": false
+    }
+  },
+  "governance": {
+    "policy_engine": true,
+    "audit_logging": true,
+    "human_approval": true,
+    "secret_protection": true,
+    "reversible_changes": true,
+    "production_deployment": false
+  },
+  "scientific_output": [
+    "citations",
+    "provenance",
+    "uncertainty",
+    "reproducibility",
+    "independent_criticism"
+  ]
+}
