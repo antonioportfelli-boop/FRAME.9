@@ -46,6 +46,19 @@ export type CelestialPosition = Readonly<{
   epoch: string | null;
 }>;
 
+export type AstrometricMeasurements = Readonly<{
+  referenceEpochJulianYear: number;
+  timeScale: "TCB";
+  /** Gaia's published ra_error is sigma(alpha*) = sigma(alpha) * cos(dec). */
+  raErrorMas: number | null;
+  decErrorMas: number | null;
+  parallaxMas: number | null;
+  parallaxErrorMas: number | null;
+  /** Gaia pmra is mu(alpha*) = mu(alpha) * cos(dec), in mas/year. */
+  pmRaMasPerYear: number | null;
+  pmDecMasPerYear: number | null;
+}>;
+
 export type CelestialEntity = Readonly<{
   id: string;
   kind: CelestialEntityKind;
@@ -55,6 +68,7 @@ export type CelestialEntity = Readonly<{
   sourceRefs: readonly SourceReference[];
   cognitiveState: CognitiveState;
   position?: CelestialPosition;
+  astrometry?: AstrometricMeasurements;
 }>;
 
 export type CelestialRelation = Readonly<{
@@ -216,11 +230,50 @@ function validatePosition(input: unknown): ValidationResult<CelestialPosition> {
   };
 }
 
+export function validateAstrometricMeasurements(input: unknown): ValidationResult<AstrometricMeasurements> {
+  const required = [
+    "referenceEpochJulianYear", "timeScale", "raErrorMas", "decErrorMas",
+    "parallaxMas", "parallaxErrorMas", "pmRaMasPerYear", "pmDecMasPerYear",
+  ];
+  if (!isRecord(input) || !hasOnlyKeys(input, required)) {
+    return { ok: false, reason: "ASTROMETRY_SHAPE_INVALID" };
+  }
+  const nullableFinite = (value: unknown) => value === null ||
+    (typeof value === "number" && Number.isFinite(value));
+  const nullableNonNegative = (value: unknown) => value === null ||
+    (typeof value === "number" && Number.isFinite(value) && value >= 0);
+  if (typeof input.referenceEpochJulianYear !== "number" ||
+      !Number.isFinite(input.referenceEpochJulianYear) ||
+      input.referenceEpochJulianYear < 1800 || input.referenceEpochJulianYear > 2500 ||
+      input.timeScale !== "TCB" ||
+      !nullableNonNegative(input.raErrorMas) ||
+      !nullableNonNegative(input.decErrorMas) ||
+      !nullableFinite(input.parallaxMas) ||
+      !nullableNonNegative(input.parallaxErrorMas) ||
+      !nullableFinite(input.pmRaMasPerYear) ||
+      !nullableFinite(input.pmDecMasPerYear)) {
+    return { ok: false, reason: "ASTROMETRY_VALUE_INVALID" };
+  }
+  return {
+    ok: true,
+    value: {
+      referenceEpochJulianYear: input.referenceEpochJulianYear,
+      timeScale: "TCB",
+      raErrorMas: input.raErrorMas,
+      decErrorMas: input.decErrorMas,
+      parallaxMas: input.parallaxMas,
+      parallaxErrorMas: input.parallaxErrorMas,
+      pmRaMasPerYear: input.pmRaMasPerYear,
+      pmDecMasPerYear: input.pmDecMasPerYear,
+    },
+  };
+}
+
 export function validateCelestialEntity(input: unknown): ValidationResult<CelestialEntity> {
   if (!isRecord(input) || !hasOnlyKeys(
     input,
     ["id", "kind", "name", "aliases", "evidenceState", "sourceRefs", "cognitiveState"],
-    ["position"],
+    ["position", "astrometry"],
   )) {
     return { ok: false, reason: "CELESTIAL_ENTITY_SHAPE_INVALID" };
   }
@@ -236,6 +289,13 @@ export function validateCelestialEntity(input: unknown): ValidationResult<Celest
   const cognitive = validateCognitiveState(input.cognitiveState);
   if (!cognitive.ok) return cognitive;
 
+  let astrometry: AstrometricMeasurements | undefined;
+  if (Object.hasOwn(input, "astrometry")) {
+    const checkedAstrometry = validateAstrometricMeasurements(input.astrometry);
+    if (!checkedAstrometry.ok) return checkedAstrometry;
+    astrometry = checkedAstrometry.value;
+  }
+
   let position: CelestialPosition | undefined;
   if (Object.hasOwn(input, "position")) {
     const checkedPosition = validatePosition(input.position);
@@ -249,6 +309,7 @@ export function validateCelestialEntity(input: unknown): ValidationResult<Celest
       aliases: [...input.aliases], evidenceState: input.evidenceState as EvidenceState,
       sourceRefs: sources.value, cognitiveState: cognitive.value,
       ...(position ? { position } : {}),
+      ...(astrometry ? { astrometry } : {}),
     },
   };
 }
