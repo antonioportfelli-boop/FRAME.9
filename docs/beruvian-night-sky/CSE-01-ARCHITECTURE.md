@@ -1,6 +1,6 @@
 # BERUVIAN NIGHT SKY — CSE-01 architecture
 
-**Status:** Implemented contract draft on `feature/beruvian-night-sky-cse-01`. Runtime integration and astronomical-data ingestion are not implemented.
+**Status:** Implemented contract and local Gaia DR3 row mapper on `feature/beruvian-night-sky-cse-01`. Live catalogue retrieval and visualization integration are not implemented.
 
 ## Purpose
 
@@ -28,10 +28,11 @@ CSE-01 establishes the first versioned data contract for a source-backed celesti
 **Initial star-catalogue source: ESA Gaia Data Release 3 (Gaia DR3), main table `gaiadr3.gaia_source`.** This is the selected first source for the star-field vertical slice, not the only future source for the sky.
 
 - Gaia DR3 publishes ICRS right ascension and declination at each source's reference epoch, together with uncertainty fields, parallax and proper motion. The reference epoch is expressed as a Julian year in TCB.
-- The CSE adapter must preserve the Gaia `source_id` as text (never a JavaScript floating-point number), map `ra`/`dec` to ICRS position, and preserve `ref_epoch`, `ra_error`, `dec_error`, `parallax`, `parallax_error`, `pmra` and `pmdec` with their original units.
+- The local row mapper preserves Gaia `source_id` as text (never a JavaScript floating-point number), maps `ra`/`dec` to ICRS position, and preserves `ref_epoch`, `ra_error`, `dec_error`, `parallax`, `parallax_error`, `pmra` and `pmdec` with their original units.
 - Gaia defines `ra_error` as uncertainty in alpha-star (alpha multiplied by cos(dec)) and `pmra` as mu-alpha-star; the adapter must retain those semantics rather than silently relabel them as unprojected RA values.
 - Do not convert parallax directly into distance without a separately documented uncertainty-aware inference method. The source value and error remain the canonical imported measurements.
 - Gaia data are open and free to use with credit to ESA/Gaia/DPAC. The app should preserve attribution and cite the Gaia mission and DR3 release papers in its data-source panel.
+- The Gaia main source table contains observed sources; its rows are not automatically confirmed stars. The mapper labels records `ASTROMETRIC_SOURCE`; astrophysical classification must come from a separately verified classification product or cross-match.
 - First import should use a bounded, reproducible query/subset rather than attempting to download the entire catalogue. Galaxy/QSO candidates, solar-system objects, nebulae and cultural constellation boundaries require separately modelled sources or tables.
 
 Official references:
@@ -51,17 +52,17 @@ Official references:
 
 ## Next gates
 
-1. Select and verify an astronomical source/catalog, schema, provenance fields, license and coordinate conventions.
-2. Add a normalized import adapter that preserves source records and revisions.
-3. Add tests against real catalog fixtures and coordinate reference cases.
-4. Connect validated snapshots to FRAME.9's existing graph/visualization surfaces without replacing the current network graph.
-5. Define a read-only KRATT evidence handoff; semantic-memory promotion remains approval-gated.
+1. Add a bounded, reproducible Gaia DR3 ADQL query and record its exact query, retrieval time and release reference.
+2. Add real catalogue fixtures and independently sourced coordinate-reference tests for the mapper.
+3. Connect validated snapshots to FRAME.9's existing graph/visualization surfaces without replacing the current network graph.
+4. Define a read-only KRATT evidence handoff; semantic-memory promotion remains approval-gated.
 
 ## Acceptance status
 
 - Contract and validators: implemented in this feature branch.
+- Gaia DR3 CSV-row mapper: implemented as a pure local adapter; it does not fetch data or classify sources as stars.
 - Unit tests: added; execution not yet verified.
-- Initial star catalogue: Gaia DR3 selected; bounded importer and sample fixture not implemented.
+- Bounded ADQL retrieval and real catalogue fixture: not implemented.
 - Visualization integration: not implemented.
 - KRATT integration: not implemented.
 - Production readiness: not claimed.
@@ -71,5 +72,5 @@ Official references:
 After repairing the pre-existing `package.json` syntax issue on this feature branch, the focused test command is:
 
 ```sh
-node --experimental-strip-types --test src/lib/cosmic/contracts.test.ts
+node --experimental-strip-types --test src/lib/cosmic/contracts.test.ts src/lib/cosmic/gaia-dr3.test.ts
 ```
