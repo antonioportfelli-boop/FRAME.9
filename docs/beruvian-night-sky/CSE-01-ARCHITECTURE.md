@@ -20,7 +20,25 @@ CSE-01 establishes the first versioned data contract for a source-backed celesti
 - A source reference records provider, resource, revision, URI, retrieval timestamp and license identifier. Only HTTP(S) URIs are accepted.
 - Evidence states remain explicit: `OBSERVED`, `DERIVED`, `INFERRED`, `SYNTHETIC`, `UNVERIFIED`.
 - Positions declare a coordinate frame (`ICRS`, `GALACTIC`, `ECLIPTIC`, `LOCAL_HORIZON`) and epoch. The validator checks numeric bounds; it does not transform coordinates or certify scientific correctness.
+- Optional astrometry stores explicitly unit-labelled errors, parallax and proper-motion components, with the reference epoch and time scale retained.
 - Cognitive axes A/B/C each take values 0, 1 or 2, producing 27 combinations. They are separate from astronomical coordinates, physical properties and measurement confidence.
+
+## Initial astronomical source decision
+
+**Initial star-catalogue source: ESA Gaia Data Release 3 (Gaia DR3), main table `gaiadr3.gaia_source`.** This is the selected first source for the star-field vertical slice, not the only future source for the sky.
+
+- Gaia DR3 publishes ICRS right ascension and declination at each source's reference epoch, together with uncertainty fields, parallax and proper motion. The reference epoch is expressed as a Julian year in TCB.
+- The CSE adapter must preserve the Gaia `source_id` as text (never a JavaScript floating-point number), map `ra`/`dec` to ICRS position, and preserve `ref_epoch`, `ra_error`, `dec_error`, `parallax`, `parallax_error`, `pmra` and `pmdec` with their original units.
+- Gaia defines `ra_error` as uncertainty in alpha-star (alpha multiplied by cos(dec)) and `pmra` as mu-alpha-star; the adapter must retain those semantics rather than silently relabel them as unprojected RA values.
+- Do not convert parallax directly into distance without a separately documented uncertainty-aware inference method. The source value and error remain the canonical imported measurements.
+- Gaia data are open and free to use with credit to ESA/Gaia/DPAC. The app should preserve attribution and cite the Gaia mission and DR3 release papers in its data-source panel.
+- First import should use a bounded, reproducible query/subset rather than attempting to download the entire catalogue. Galaxy/QSO candidates, solar-system objects, nebulae and cultural constellation boundaries require separately modelled sources or tables.
+
+Official references:
+- [Gaia ESA Archive](https://gea.esac.esa.int/archive/)
+- [Gaia DR3 documentation](https://gea.esac.esa.int/archive/documentation/GDR3/)
+- [Gaia DR3 main source catalogue data model](https://gea.esac.esa.int/archive/documentation/GDR3/Gaia_archive/chap_datamodel/sec_dm_main_source_catalogue/ssec_dm_gaia_source.html)
+- [Gaia DR3 credit and citation instructions](https://gea.esac.esa.int/archive/documentation/GDR3/Miscellaneous/sec_credit_and_citation_instructions/)
 
 ## Explicit non-goals
 
@@ -43,7 +61,7 @@ CSE-01 establishes the first versioned data contract for a source-backed celesti
 
 - Contract and validators: implemented in this feature branch.
 - Unit tests: added; execution not yet verified.
-- Astronomical data source: not selected.
+- Initial star catalogue: Gaia DR3 selected; bounded importer and sample fixture not implemented.
 - Visualization integration: not implemented.
 - KRATT integration: not implemented.
 - Production readiness: not claimed.
