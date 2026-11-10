@@ -302,6 +302,10 @@ export function validateCelestialEntity(input: unknown): ValidationResult<Celest
     if (!checkedPosition.ok) return checkedPosition;
     position = checkedPosition.value;
   }
+  if (astrometry && (!position || position.frame !== "ICRS" ||
+      position.epoch !== `${astrometry.referenceEpochJulianYear.toFixed(1)} TCB`)) {
+    return { ok: false, reason: "ASTROMETRY_POSITION_FRAME_OR_EPOCH_MISMATCH" };
+  }
   return {
     ok: true,
     value: {
