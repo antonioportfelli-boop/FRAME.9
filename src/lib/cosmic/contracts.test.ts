@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   CSE_SCHEMA_VERSION,
   cognitiveStateKey,
+  validateAstrometricMeasurements,
   validateCelestialEntity,
   validateCognitiveState,
   validateCosmicGraphSnapshot,
@@ -53,8 +54,36 @@ test("source references require valid UTC time and HTTP(S) URI", () => {
   assert.equal(validateSourceReference({ ...source(), uri: "file:///etc/passwd" }).ok, false);
 });
 
+test("preserves Gaia-style astrometry with explicit epoch and units", () => {
+  const astrometry = {
+    referenceEpochJulianYear: 2016.0,
+    timeScale: "TCB",
+    raErrorMas: 0.2,
+    decErrorMas: 0.3,
+    parallaxMas: -0.15,
+    parallaxErrorMas: 0.1,
+    pmRaMasPerYear: -12.4,
+    pmDecMasPerYear: 7.8,
+  };
+  assert.equal(validateAstrometricMeasurements(astrometry).ok, true);
+  assert.equal(validateAstrometricMeasurements({
+    ...astrometry, referenceEpochJulianYear: Number.NaN,
+  }).ok, false);
+  assert.equal(validateAstrometricMeasurements({
+    ...astrometry, raErrorMas: -0.1,
+  }).ok, false);
+});
+
 test("rejects invalid coordinate ranges and non-finite values", () => {
   assert.equal(validateCelestialEntity(entity("star-ok")).ok, true);
+  assert.equal(validateCelestialEntity({
+    ...entity("gaia-source-123"),
+    astrometry: {
+      referenceEpochJulianYear: 2016.0, timeScale: "TCB",
+      raErrorMas: 0.2, decErrorMas: 0.3, parallaxMas: 1.1, parallaxErrorMas: 0.1,
+      pmRaMasPerYear: 4.5, pmDecMasPerYear: -2.1,
+    },
+  }).ok, true);
   assert.equal(validateCelestialEntity({
     ...entity("star-bad"),
     position: { frame: "ICRS", longitudeDeg: 20, latitudeDeg: 91, epoch: "J2000.0" },
