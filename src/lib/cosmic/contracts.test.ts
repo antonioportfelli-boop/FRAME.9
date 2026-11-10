@@ -72,12 +72,19 @@ test("preserves Gaia-style astrometry with explicit epoch and units", () => {
   assert.equal(validateAstrometricMeasurements({
     ...astrometry, raErrorMas: -0.1,
   }).ok, false);
+  const inconsistent = {
+    ...entity("gaia-source-bad"),
+    position: { frame: "GALACTIC", longitudeDeg: 120, latitudeDeg: 25, epoch: "2016.0 TCB" },
+    astrometry,
+  };
+  assert.equal(validateCelestialEntity(inconsistent).ok, false);
 });
 
 test("rejects invalid coordinate ranges and non-finite values", () => {
   assert.equal(validateCelestialEntity(entity("star-ok")).ok, true);
   assert.equal(validateCelestialEntity({
     ...entity("gaia-source-123"),
+    position: { frame: "ICRS", longitudeDeg: 120, latitudeDeg: 25, epoch: "2016.0 TCB" },
     astrometry: {
       referenceEpochJulianYear: 2016.0, timeScale: "TCB",
       raErrorMas: 0.2, decErrorMas: 0.3, parallaxMas: 1.1, parallaxErrorMas: 0.1,
