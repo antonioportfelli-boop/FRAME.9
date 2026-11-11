@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ApiHostAddressRouteImport } from './routes/api/host-address'
 import { Route as ApiRdapRouteImport } from './routes/api/rdap'
+import { Route as ApiCosmicGaiaRouteImport } from './routes/api/cosmic/gaia'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const ApiRdapRoute = ApiRdapRouteImport.update({
   path: '/api/rdap',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCosmicGaiaRoute = ApiCosmicGaiaRouteImport.update({
+  id: '/api/cosmic/gaia',
+  path: '/api/cosmic/gaia',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/api/host-address': typeof ApiHostAddressRoute
   '/api/rdap': typeof ApiRdapRoute
+  '/api/cosmic/gaia': typeof ApiCosmicGaiaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/api/host-address': typeof ApiHostAddressRoute
   '/api/rdap': typeof ApiRdapRoute
+  '/api/cosmic/gaia': typeof ApiCosmicGaiaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -61,18 +69,19 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/api/host-address': typeof ApiHostAddressRoute
   '/api/rdap': typeof ApiRdapRoute
+  '/api/cosmic/gaia': typeof ApiCosmicGaiaRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/host-address' | '/api/rdap' | '/api/auth/$'
+  fullPaths: '/' | '/api/host-address' | '/api/rdap' | '/api/cosmic/gaia' | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/host-address' | '/api/rdap' | '/api/auth/$'
-  id: '__root__' | '/' | '/api/host-address' | '/api/rdap' | '/api/auth/$'
-  fullPaths: '/' | '/login' | '/api/host-address' | '/api/rdap'
+  to: '/' | '/api/host-address' | '/api/rdap' | '/api/cosmic/gaia' | '/api/auth/$'
+  id: '__root__' | '/' | '/api/host-address' | '/api/rdap' | '/api/cosmic/gaia' | '/api/auth/$'
+  fullPaths: '/' | '/login' | '/api/host-address' | '/api/rdap' | '/api/cosmic/gaia'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/api/host-address' | '/api/rdap'
-  id: '__root__' | '/' | '/login' | '/api/host-address' | '/api/rdap'
+  to: '/' | '/login' | '/api/host-address' | '/api/rdap' | '/api/cosmic/gaia'
+  id: '__root__' | '/' | '/login' | '/api/host-address' | '/api/rdap' | '/api/cosmic/gaia'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -80,6 +89,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ApiHostAddressRoute: typeof ApiHostAddressRoute
   ApiRdapRoute: typeof ApiRdapRoute
+  ApiCosmicGaiaRoute: typeof ApiCosmicGaiaRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -113,6 +123,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiRdapRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cosmic/gaia': {
+      id: '/api/cosmic/gaia'
+      path: '/api/cosmic/gaia'
+      fullPath: '/api/cosmic/gaia'
+      preLoaderRoute: typeof ApiCosmicGaiaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -128,6 +145,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ApiHostAddressRoute: ApiHostAddressRoute,
   ApiRdapRoute: ApiRdapRoute,
+  ApiCosmicGaiaRoute: ApiCosmicGaiaRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

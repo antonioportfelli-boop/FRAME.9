@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { gaiaDr3Sample } from "@/lib/cosmic/gaia-dr3-snapshot";
+import { gaiaDr3Sample, gaiaDr3SampleManifest } from "@/lib/cosmic/gaia-dr3-snapshot";
+import type { GaiaRefreshManifest } from "@/lib/cosmic/gaia-dr3-refresh-types";
+import { validateCosmicGraphSnapshot, type CosmicGraphSnapshot } from "@/lib/cosmic/contracts";
 
 function project(ra: number, dec: number, width: number, height: number) {
   const pad = { x: 28, y: 24 };
@@ -12,12 +14,49 @@ function project(ra: number, dec: number, width: number, height: number) {
 export function GaiaSnapshotGraph({ query = "" }: { query?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [snapshot, setSnapshot] = useState<CosmicGraphSnapshot>(gaiaDr3Sample);
+  const [manifest, setManifest] = useState<GaiaRefreshManifest | typeof gaiaDr3SampleManifest>(gaiaDr3SampleManifest);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [refreshNotice, setRefreshNotice] = useState<string | null>(null);
   const normalizedQuery = query.trim().toLowerCase();
-  const entities = useMemo(() => gaiaDr3Sample.entities.filter((entity) =>
+  const entities = useMemo(() => snapshot.entities.filter((entity) =>
     !normalizedQuery || `${entity.id} ${entity.name}`.toLowerCase().includes(normalizedQuery),
-  ), [normalizedQuery]);
+  ), [normalizedQuery, snapshot]);
   const selected = entities.find((entity) => entity.id === selectedId) ?? entities[0];
   const activeId = selected?.id ?? null;
+
+  async function checkArchive() {
+    setRefreshing(true);
+    setRefreshError(null);
+    setRefreshNotice(null);
+    try {
+      const response = await fetch("/api/cosmic/gaia", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: "{}",
+        cache: "no-store",
+      });
+      const body = await response.json() as {
+        snapshot?: unknown;
+        manifest?: GaiaRefreshManifest;
+        error?: { message?: string };
+      };
+      if (!response.ok) throw new Error(body.error?.message ?? "Gaia Archive check failed.");
+      if (!body.manifest) throw new Error("Gaia Archive returned incomplete provenance metadata.");
+      const validated = validateCosmicGraphSnapshot(body.snapshot);
+      if (!validated.ok) throw new Error("Gaia Archive snapshot failed local graph validation.");
+      setSnapshot(validated.value);
+      setManifest(body.manifest);
+      setRefreshNotice(body.manifest.cache === "SERVER_CACHE"
+        ? "Using the validated server cache."
+        : "A new Gaia DR3 response was validated and cached.");
+    } catch (error) {
+      setRefreshError(error instanceof Error ? error.message : "Gaia Archive check failed; the current snapshot remains available.");
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -95,8 +134,25 @@ export function GaiaSnapshotGraph({ query = "" }: { query?: string }) {
       <div className="flex min-h-0 flex-1 flex-col p-3">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-muted">
           <span>Gaia DR3 · ICRS · reference epoch 2016.0 TCB</span>
-          <span>{entities.length} / {gaiaDr3Sample.entities.length} sources · bounded sample</span>
+          <span>{entities.length} / {snapshot.entities.length} sources · bounded sample</span>
         </div>
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="min-h-10 border border-teal px-3 font-mono text-xs text-teal disabled:opacity-50"
+            onClick={() => void checkArchive()}
+            disabled={refreshing}
+            aria-busy={refreshing}
+          >
+            {refreshing ? "CHECKING GAIA ARCHIVE…" : "CHECK GAIA ARCHIVE"}
+          </button>
+          <span className="font-mono text-[10px] text-muted">
+            {"cache" in manifest && manifest.cache === "SERVER_CACHE" ? "SERVER CACHE" :
+              "cache" in manifest && manifest.cache === "ESA_TAP" ? "ESA TAP" : "COMMITTED SNAPSHOT"} · {manifest.retrievedAt}
+          </span>
+        </div>
+        {refreshError ? <p role="alert" className="mb-2 border border-brass bg-ink px-3 py-2 text-xs text-brass">{refreshError} The current validated snapshot remains in view.</p> : null}
+        {refreshNotice ? <p role="status" className="mb-2 text-xs text-teal">{refreshNotice}</p> : null}
         <canvas
           ref={canvasRef}
           className="min-h-0 w-full flex-1 border border-line"
@@ -110,8 +166,19 @@ export function GaiaSnapshotGraph({ query = "" }: { query?: string }) {
           <span className="text-muted">Parallax {selected?.astrometry?.parallaxMas?.toFixed(4) ?? "—"} mas · source measurement</span>
         </div>
         <p className="mt-2 font-mono text-[10px] leading-relaxed text-muted">
-          Data: ESA/Gaia/DPAC, Gaia DR3. Positions are shown at the catalogue reference epoch; no distance or source class is inferred.
+          Data: ESA/Gaia/DPAC, Gaia DR3. Positions stay at the catalogue reference epoch; no distance, source class, or motion propagation is inferred. Archive checks are user-triggered and cached for up to 24 hours per server process.
         </p>
+        <details className="mt-2 border-t border-line pt-2 text-[10px] text-muted">
+          <summary className="cursor-pointer font-mono">Source and retrieval record</summary>
+          <div className="mt-2 grid gap-1 break-words">
+            <span>{manifest.dataset} · {manifest.table} · {manifest.rowCount} rows</span>
+            <span>Retrieved {manifest.retrievedAt} · TAP job {manifest.jobId}</span>
+            <span>SHA-256 {manifest.sha256}</span>
+            {"cacheValidUntil" in manifest ? <span>Server cache expires {manifest.cacheValidUntil}</span> : null}
+            <code className="break-all whitespace-normal">{manifest.query}</code>
+            <span>{manifest.attribution}</span>
+          </div>
+        </details>
         <details className="mt-2 border-t border-line pt-2 text-xs text-muted">
           <summary className="cursor-pointer">Browse the {entities.length} visible source IDs</summary>
           <ul className="mt-2 grid max-h-28 grid-cols-2 gap-1 overflow-auto sm:grid-cols-4">
