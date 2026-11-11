@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { gaiaDr3Sample, gaiaDr3SampleManifest } from "@/lib/cosmic/gaia-dr3-snapshot";
 import type { GaiaRefreshManifest } from "@/lib/cosmic/gaia-dr3-refresh-types";
 import { validateCosmicGraphSnapshot, type CosmicGraphSnapshot } from "@/lib/cosmic/contracts";
+import { GAIA_DR3_SAMPLE_LIMIT, GAIA_DR3_SAMPLE_QUERY } from "@/lib/cosmic/gaia-dr3-query";
 
 function project(ra: number, dec: number, width: number, height: number) {
   const pad = { x: 28, y: 24 };
@@ -46,6 +47,18 @@ export function GaiaSnapshotGraph({ query = "" }: { query?: string }) {
       if (!body.manifest) throw new Error("Gaia Archive returned incomplete provenance metadata.");
       const validated = validateCosmicGraphSnapshot(body.snapshot);
       if (!validated.ok) throw new Error("Gaia Archive snapshot failed local graph validation.");
+      const retrievedAt = Date.parse(body.manifest.retrievedAt);
+      const manifestValid = body.manifest.dataset === "Gaia DR3" &&
+        body.manifest.table === "gaiadr3.gaia_source" &&
+        body.manifest.rowCount === GAIA_DR3_SAMPLE_LIMIT &&
+        validated.value.entities.length === GAIA_DR3_SAMPLE_LIMIT &&
+        body.manifest.query === GAIA_DR3_SAMPLE_QUERY &&
+        /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}-O$/i.test(body.manifest.jobId) &&
+        validated.value.datasetRevision === `gaia-dr3:${body.manifest.jobId}` &&
+        /^[0-9a-f]{64}$/.test(body.manifest.sha256) &&
+        Number.isFinite(retrievedAt) && new Date(retrievedAt).toISOString() === body.manifest.retrievedAt &&
+        (body.manifest.cache === "ESA_TAP" || body.manifest.cache === "SERVER_CACHE");
+      if (!manifestValid) throw new Error("Gaia Archive provenance metadata did not match the validated snapshot.");
       setSnapshot(validated.value);
       setManifest(body.manifest);
       setRefreshNotice(body.manifest.cache === "SERVER_CACHE"
