@@ -1,0 +1,14 @@
+{
+  "dataset": "Gaia DR3",
+  "table": "gaiadr3.gaia_source",
+  "archive": "https://gea.esac.esa.int/archive/",
+  "tapEndpoint": "https://gea.esac.esa.int/tap-server/tap/async",
+  "jobId": "ec122389-dd65-11f1-b71e-bc97e148b76b-O",
+  "retrievedAt": "2026-11-11T00:22:04Z",
+  "rowCount": 64,
+  "query": "SELECT TOP 64 source_id, designation, ref_epoch, ra, dec, ra_error, dec_error, parallax, parallax_error, pmra, pmdec FROM gaiadr3.gaia_source WHERE random_index < 100000 AND astrometric_params_solved = 31 AND ra IS NOT NULL AND dec IS NOT NULL ORDER BY random_index",
+  "cap": 64,
+  "selection": "Lowest random_index rows in bounded 0..99999 subset, five-parameter astrometric solutions only",
+  "attribution": "Credit ESA, Gaia, and DPAC; see official credit and citation instructions.",
+  "sha256": "f09bcd1aae5952b7417b9875f997149e699912d5c2b1cb7805fba1a1962d136e"
+}
