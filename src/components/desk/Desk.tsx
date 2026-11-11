@@ -24,6 +24,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { ForceGraph } from "@/components/graph/ForceGraph";
+import { GaiaSnapshotGraph } from "@/components/graph/GaiaSnapshotGraph";
+import { gaiaDr3Sample } from "@/lib/cosmic/gaia-dr3-snapshot";
 import { InstallBanner } from "@/components/desk/InstallBanner";
 import { ShaderField, type ShaderMode } from "@/components/desk/ShaderField";
 import { MirrorLayer } from "@/components/desk/MirrorDesk";
@@ -140,13 +142,18 @@ export function Desk() {
   const searchRef = useRef<HTMLInputElement>(null);
   const [now, setNow] = useState(0);
   const [shader, setShader] = useState<ShaderMode>(0);
+  const [graphMode, setGraphMode] = useState<"network" | "gaia">("network");
   const plate = usePlates((s) => s.src);
 
   const matches = (() => {
-    const nodes = getWorld().nodes;
     const q = search.trim();
-    if (!q) return nodes.length;
-    return nodes.filter((node) => nodeMatches(node, q)).length;
+    if (graphMode === "gaia") {
+      return q
+        ? gaiaDr3Sample.entities.filter((entity) => `${entity.id} ${entity.name}`.toLowerCase().includes(q.toLowerCase())).length
+        : gaiaDr3Sample.entities.length;
+    }
+    const nodes = getWorld().nodes;
+    return q ? nodes.filter((node) => nodeMatches(node, q)).length : nodes.length;
   })();
 
   const elapsed = session ? Math.max(0, Math.floor((now - session.startedAt) / 1000)) : 0;
@@ -360,6 +367,24 @@ export function Desk() {
         {demo ? (
           <p className="border-t border-brass bg-ink px-3 py-2 font-mono text-xs text-brass">SYNTHETIC DEMO — not a live capture</p>
         ) : null}
+        <div className="flex gap-2 px-3 pb-2" role="group" aria-label="Graph view">
+          <button
+            type="button"
+            className={`h-10 flex-1 border font-mono text-xs ${graphMode === "network" ? "border-teal text-teal" : "border-line text-muted"}`}
+            aria-pressed={graphMode === "network"}
+            onClick={() => setGraphMode("network")}
+          >
+            FRAME GRAPH
+          </button>
+          <button
+            type="button"
+            className={`h-10 flex-1 border font-mono text-xs ${graphMode === "gaia" ? "border-teal text-teal" : "border-line text-muted"}`}
+            aria-pressed={graphMode === "gaia"}
+            onClick={() => setGraphMode("gaia")}
+          >
+            GAIA DR3 · {gaiaDr3Sample.entities.length}
+          </button>
+        </div>
         <form
           className="px-3 pb-2"
           onSubmit={(event) => {
@@ -374,14 +399,14 @@ export function Desk() {
               ref={searchRef}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Find a node, kind, or domain"
+              placeholder={graphMode === "gaia" ? "Find a Gaia source ID" : "Find a node, kind, or domain"}
               className="min-w-0 flex-1 bg-transparent text-sm text-fg outline-none placeholder:text-muted"
             />
             <span className="font-mono text-xs tabular-nums text-muted">{matches}</span>
           </label>
         </form>
         <InstallBanner phone={phone} />
-        {fieldOpen ? (
+        {fieldOpen && graphMode === "network" ? (
           <div className="grid gap-3 border-t border-line px-3 py-3 sm:grid-cols-3">
             <label className="text-xs text-muted">
               Repulsion {graph.charge}
@@ -486,12 +511,12 @@ export function Desk() {
       </header>
 
       <main className="relative min-h-0 flex-1">
-        {!solo && !phone ? (
+        {!solo && graphMode === "network" && !phone ? (
           <div className="pointer-events-none absolute inset-0 opacity-[0.45]">
             <ShaderField mode={shader} plate={plate} />
           </div>
         ) : null}
-        {!solo ? <ForceGraph /> : null}
+        {!solo ? (graphMode === "network" ? <ForceGraph /> : <GaiaSnapshotGraph query={search} />) : null}
         {solo ? (
           <section className="absolute inset-0 flex flex-col bg-bg" aria-label={solo.title}>
             <ModuleBody id={solo.id} active />
