@@ -4,7 +4,7 @@
 
 The committed CSV fixture contains 64 records retrieved from the official ESA Gaia TAP service on 2026-11-11. The ADQL query selects a deterministic bounded slice by `random_index`, restricts rows to five-parameter astrometric solutions, and caps the response at 64. The exact query, asynchronous TAP job ID, retrieval timestamp, endpoint, row count, and SHA-256 are in `src/lib/cosmic/fixtures/gaia-dr3-cse02-manifest.json`.
 
-The sample is a technical fixture, not a statistically uniform all-sky catalogue: the low `random_index` slice is useful for repeatable demonstration, but it must not support population or sky-density claims. The integration preserves `source_id` as text, ICRS coordinates at Gaia's TCB reference epoch, uncertainty units, signed parallax, and proper-motion semantics. Negative parallaxes remain measurements; no reciprocal-distance conversion is performed.
+The query uses Gaia's `random_index` for a repeatable subset, then restricts it to five-parameter astrometric solutions and the first 64 matching rows. This small technical fixture is for importer and visualization work; it is not sized or designed for population inference. The integration preserves `source_id` as text, ICRS coordinates at Gaia's TCB reference epoch, uncertainty units, signed parallax, and proper-motion semantics. Negative parallaxes remain measurements; no reciprocal-distance conversion is performed.
 
 ## Import path
 
