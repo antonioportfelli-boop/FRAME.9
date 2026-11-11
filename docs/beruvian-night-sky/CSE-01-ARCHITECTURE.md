@@ -32,6 +32,7 @@ CSE-01 establishes the first versioned data contract for a source-backed celesti
 - Gaia defines `ra_error` as uncertainty in alpha-star (alpha multiplied by cos(dec)) and `pmra` as mu-alpha-star; the adapter must retain those semantics rather than silently relabel them as unprojected RA values.
 - Do not convert parallax directly into distance without a separately documented uncertainty-aware inference method. The source value and error remain the canonical imported measurements.
 - Gaia data are open and free to use with credit to ESA/Gaia/DPAC. The app should preserve attribution and cite the Gaia mission and DR3 release papers in its data-source panel.
+- `ESA-GAIA-OPEN-DATA-ATTRIBUTION` is a project-local provenance tag, not a claim that ESA published an SPDX licence identifier.
 - The Gaia main source table contains observed sources; its rows are not automatically confirmed stars. The mapper labels records `ASTROMETRIC_SOURCE`; astrophysical classification must come from a separately verified classification product or cross-match.
 - First import should use a bounded, reproducible query/subset rather than attempting to download the entire catalogue. Galaxy/QSO candidates, solar-system objects, nebulae and cultural constellation boundaries require separately modelled sources or tables.
 
