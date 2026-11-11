@@ -32,6 +32,7 @@ export type GaiaDr3ImportOptions = Readonly<{
 }>;
 
 const GAIA_ARCHIVE_URI = "https://gea.esac.esa.int/archive/";
+// Project-local attribution marker, not an official SPDX licence identifier.
 const GAIA_ATTRIBUTION_TAG = "ESA-GAIA-OPEN-DATA-ATTRIBUTION";
 const DECIMAL_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/;
 
