@@ -7,13 +7,19 @@ on:
       - ".github/workflows/kratt-topology.yml"
   push:
     branches:
-      - "feature/kratt-antikythera-topology-v0"
+      - "main"
+      - "Forge.-9"
+      - "feature/**"
     paths:
       - "tools/kratt-topology/**"
       - ".github/workflows/kratt-topology.yml"
 
 permissions:
   contents: read
+
+concurrency:
+  group: kratt-topology-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   rust-topology:
@@ -22,10 +28,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - name: Compile and run deterministic tests (offline)
-        run: cargo test --manifest-path tools/kratt-topology/Cargo.toml --all-targets --offline
-      - name: Static lint checks (offline)
-        run: cargo clippy --manifest-path tools/kratt-topology/Cargo.toml --all-targets --offline -- -D warnings
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Compile and run deterministic tests
+        run: cargo test --manifest-path tools/kratt-topology/Cargo.toml --all-targets
+      - name: Static lint checks
+        run: cargo clippy --manifest-path tools/kratt-topology/Cargo.toml --all-targets -- -D warnings
