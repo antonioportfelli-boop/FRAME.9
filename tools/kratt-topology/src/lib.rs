@@ -158,14 +158,14 @@ impl ColumnNeuralMatrix {
         let next_epoch = state.epoch.checked_add(1).ok_or(TopologyError::EpochExhausted)?;
         let mut feedback: u64 = 0xCAFE_EBEE_FDEF_ACED;
         let mut diagnostic_tag = feedback;
-        for i in 0..NODE_COUNT {
-            let base = state.nodes[i]
+        for (i, node) in state.nodes.iter_mut().enumerate() {
+            let base = node
                 .wrapping_add(modifier)
                 .rotate_left((i % 64) as u32)
                 ^ (i as u64)
                 ^ feedback;
             let evolved = dialectic.resolve_gemara_debate(base, alpha.to_bits());
-            state.nodes[i] = evolved;
+            *node = evolved;
             feedback = evolved.rotate_left(17);
             if i % 2 == 0 {
                 diagnostic_tag ^= evolved.rotate_left(13);
