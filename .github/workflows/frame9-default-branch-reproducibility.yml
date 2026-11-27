@@ -1,0 +1,139 @@
+name: FRAME.9 default-branch reproducibility
+
+on:
+  push:
+    branches:
+      - main
+      - repair/frame9-lockfile-main-ci-2026-11-27
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frame9-repro-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate-lock:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/repair/frame9-lockfile-main-ci-2026-11-27'
+    name: Regenerate lockfile on repair branch only
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      DATABASE_URL: ""
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Rebuild dependency graph from the cleaned manifest
+        run: |
+          rm -f package-lock.json
+          npm install --ignore-scripts --no-audit --no-fund
+          node --input-type=module -e "JSON.parse(await (await import('node:fs/promises')).readFile('package-lock.json','utf8')); console.log('package-lock.json parses')"
+      - name: Commit regenerated lockfile to repair branch only
+        run: |
+          if ! git diff --quiet -- package-lock.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "fix: regenerate valid FRAME.9 npm lockfile"
+            git push origin HEAD:refs/heads/repair/frame9-lockfile-main-ci-2026-11-27
+          fi
+
+  validate:
+    needs: regenerate-lock
+    if: always() && (needs.regenerate-lock.result == 'success' || needs.regenerate-lock.result == 'skipped')
+    name: Node 22 install, typecheck, lint, tests and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      DATABASE_URL: ""
+    steps:
+      - name: Checkout tested ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref_name }}
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install exact locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify manifest and lock dependency maps
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { readFileSync } from "node:fs";
+          const manifest = JSON.parse(readFileSync("package.json", "utf8"));
+          const lock = JSON.parse(readFileSync("package-lock.json", "utf8"));
+          const root = lock.packages?.[""];
+          assert.ok(root, "lockfile root package entry is required");
+          for (const name of ["dependencies", "devDependencies"]) {
+            assert.deepEqual(root[name], manifest[name], name + " must match package.json");
+          }
+          console.log("manifest and lock dependency maps match");
+          NODE
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint -- --max-warnings=0
+      - name: Authentication invariant
+        run: npm run check:auth
+      - name: Test
+        run: npm test
+      - name: Build without database migration
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
+      - name: Assert build did not invoke database migrator
+        run: |
+          if grep -Fq '[migrate]' build.log; then
+            echo 'ERROR: build invoked the database migrator.'
+            exit 1
+          fi
+
+  secret-scan:
+    name: Gitleaks secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      GITLEAKS_VERSION: 8.28.0
+      GITLEAKS_SHA256: a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb
+    steps:
+      - name: Checkout history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install checksum-pinned gitleaks
+        run: |
+          curl -sSfL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum -c -
+          tar -xzf gitleaks.tgz gitleaks
+      - name: Scan introduced commits
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -n "$PR_BASE" ]; then
+            range="$PR_BASE..$PR_HEAD"
+          elif [ -n "$PUSH_BEFORE" ] && [ "$PUSH_BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            range="$PUSH_BEFORE..$GITHUB_SHA"
+          else
+            range="-1 $GITHUB_SHA"
+          fi
+          ./gitleaks git --redact --no-banner --exit-code 1 --log-opts="$range" .

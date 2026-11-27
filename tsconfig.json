@@ -21,7 +21,7 @@
       "vite/client",
       "node"
     ],
-    "baseUrl": ".",
+    // Paths are resolved relative to this tsconfig; baseUrl is deprecated.
     "paths": {
       "@/*": [
         "./src/*"

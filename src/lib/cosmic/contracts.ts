@@ -239,20 +239,26 @@ export function validateAstrometricMeasurements(input: unknown): ValidationResul
   if (!isRecord(input) || !hasOnlyKeys(input, required)) {
     return { ok: false, reason: "ASTROMETRY_SHAPE_INVALID" };
   }
-  const nullableFinite = (value: unknown) => value === null ||
-    (typeof value === "number" && Number.isFinite(value));
-  const nullableNonNegative = (value: unknown) => value === null ||
-    (typeof value === "number" && Number.isFinite(value) && value >= 0);
+  const nullableFinite = (value: unknown): value is number | null =>
+    value === null || (typeof value === "number" && Number.isFinite(value));
+  const nullableNonNegative = (value: unknown): value is number | null =>
+    value === null || (typeof value === "number" && Number.isFinite(value) && value >= 0);
+  const raErrorMas = input.raErrorMas;
+  const decErrorMas = input.decErrorMas;
+  const parallaxMas = input.parallaxMas;
+  const parallaxErrorMas = input.parallaxErrorMas;
+  const pmRaMasPerYear = input.pmRaMasPerYear;
+  const pmDecMasPerYear = input.pmDecMasPerYear;
   if (typeof input.referenceEpochJulianYear !== "number" ||
       !Number.isFinite(input.referenceEpochJulianYear) ||
       input.referenceEpochJulianYear < 1800 || input.referenceEpochJulianYear > 2500 ||
       input.timeScale !== "TCB" ||
-      !nullableNonNegative(input.raErrorMas) ||
-      !nullableNonNegative(input.decErrorMas) ||
-      !nullableFinite(input.parallaxMas) ||
-      !nullableNonNegative(input.parallaxErrorMas) ||
-      !nullableFinite(input.pmRaMasPerYear) ||
-      !nullableFinite(input.pmDecMasPerYear)) {
+      !nullableNonNegative(raErrorMas) ||
+      !nullableNonNegative(decErrorMas) ||
+      !nullableFinite(parallaxMas) ||
+      !nullableNonNegative(parallaxErrorMas) ||
+      !nullableFinite(pmRaMasPerYear) ||
+      !nullableFinite(pmDecMasPerYear)) {
     return { ok: false, reason: "ASTROMETRY_VALUE_INVALID" };
   }
   return {
@@ -260,12 +266,12 @@ export function validateAstrometricMeasurements(input: unknown): ValidationResul
     value: {
       referenceEpochJulianYear: input.referenceEpochJulianYear,
       timeScale: "TCB",
-      raErrorMas: input.raErrorMas,
-      decErrorMas: input.decErrorMas,
-      parallaxMas: input.parallaxMas,
-      parallaxErrorMas: input.parallaxErrorMas,
-      pmRaMasPerYear: input.pmRaMasPerYear,
-      pmDecMasPerYear: input.pmDecMasPerYear,
+      raErrorMas,
+      decErrorMas,
+      parallaxMas,
+      parallaxErrorMas,
+      pmRaMasPerYear,
+      pmDecMasPerYear,
     },
   };
 }
