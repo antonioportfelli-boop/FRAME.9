@@ -32,11 +32,11 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - name: Regenerate malformed lockfile from the cleaned manifest
+      - name: Rebuild dependency graph and regenerate lockfile from the cleaned manifest
         if: github.event_name == 'push' && github.ref == 'refs/heads/repair/frame9-lockfile-main-ci-2026-11-27'
         run: |
           rm -f package-lock.json
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm install --ignore-scripts --no-audit --no-fund
           node --input-type=module -e "JSON.parse(await (await import('node:fs/promises')).readFile('package-lock.json','utf8')); console.log('package-lock.json parses')"
       - name: Commit regenerated lockfile to repair branch only
         if: github.event_name == 'push' && github.ref == 'refs/heads/repair/frame9-lockfile-main-ci-2026-11-27'
