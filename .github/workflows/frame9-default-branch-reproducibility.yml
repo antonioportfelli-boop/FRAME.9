@@ -1,0 +1,70 @@
+name: FRAME.9 default-branch reproducibility
+
+on:
+  push:
+    branches:
+      - main
+      - repair/frame9-lockfile-main-ci-2026-11-27
+  pull_request:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: frame9-repro-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  manifest-lock-and-quality:
+    name: Node 22 lockfile, typecheck, lint, tests and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Build and CI must never mutate a configured database schema.
+      DATABASE_URL: ""
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Regenerate malformed lockfile from the cleaned manifest
+        if: github.event_name == 'push' && github.ref == 'refs/heads/repair/frame9-lockfile-main-ci-2026-11-27'
+        run: |
+          rm -f package-lock.json
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          node --input-type=module -e "JSON.parse(await (await import('node:fs/promises')).readFile('package-lock.json','utf8')); console.log('package-lock.json parses')"
+      - name: Commit regenerated lockfile to repair branch only
+        if: github.event_name == 'push' && github.ref == 'refs/heads/repair/frame9-lockfile-main-ci-2026-11-27'
+        run: |
+          if ! git diff --quiet -- package-lock.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "fix: regenerate valid FRAME.9 npm lockfile"
+            git push origin HEAD:refs/heads/repair/frame9-lockfile-main-ci-2026-11-27
+          fi
+      - name: Install exact locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint -- --max-warnings=0
+      - name: Authentication invariant
+        run: npm run check:auth
+      - name: Test
+        run: npm test
+      - name: Build without database migration
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
+      - name: Assert build did not invoke database migrator
+        run: |
+          if grep -Fq '[migrate]' build.log; then
+            echo 'ERROR: build invoked the database migrator.'
+            exit 1
+          fi
