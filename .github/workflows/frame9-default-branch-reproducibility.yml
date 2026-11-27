@@ -50,6 +50,20 @@ jobs:
           fi
       - name: Install exact locked dependencies
         run: npm ci --no-audit --no-fund
+      - name: Verify manifest and lock dependency maps
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { readFileSync } from "node:fs";
+          const manifest = JSON.parse(readFileSync("package.json", "utf8"));
+          const lock = JSON.parse(readFileSync("package-lock.json", "utf8"));
+          const root = lock.packages?.[""];
+          assert.ok(root, "lockfile root package entry is required");
+          for (const name of ["dependencies", "devDependencies"]) {
+            assert.deepEqual(root[name], manifest[name], name + " must match package.json");
+          }
+          console.log("manifest and lock dependency maps match");
+          NODE
       - name: Typecheck
         run: npm run typecheck
       - name: Lint
@@ -68,3 +82,35 @@ jobs:
             echo 'ERROR: build invoked the database migrator.'
             exit 1
           fi
+
+  secret-scan:
+    name: Gitleaks secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: 8.28.0
+      GITLEAKS_SHA256: a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb
+    steps:
+      - name: Checkout history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install checksum-pinned gitleaks
+        run: |
+          curl -sSfL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum -c -
+          tar -xzf gitleaks.tgz gitleaks
+      - name: Scan introduced commits
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -n "$PR_BASE" ]; then
+            range="$PR_BASE..$PR_HEAD"
+          elif [ -n "$PUSH_BEFORE" ] && [ "$PUSH_BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            range="$PUSH_BEFORE..$GITHUB_SHA"
+          else
+            range="-1 $GITHUB_SHA"
+          fi
+          ./gitleaks git --redact --no-banner --exit-code 1 --log-opts="$range" .
